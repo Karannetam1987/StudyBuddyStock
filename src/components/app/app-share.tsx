@@ -70,47 +70,43 @@ export function AppShare() {
                 <CardDescription>If you find this app helpful, share it with your friends!</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
-                 <div className="flex flex-wrap items-center justify-center gap-4">
-                    <div className="flex items-center gap-2">
-                        <Button onClick={() => shareOn('whatsapp')} variant="outline" size="icon" className="h-12 w-12 rounded-lg hover:bg-[#25D366] hover:text-white transition-colors">
-                            <WhatsappIcon className="h-6 w-6"/>
-                        </Button>
-                        <Button onClick={() => shareOn('facebook')} variant="outline" size="icon" className="h-12 w-12 rounded-lg hover:bg-[#1877F2] hover:text-white transition-colors">
-                            <FacebookIcon className="h-6 w-6"/>
-                        </Button>
-                        <Button onClick={() => shareOn('instagram')} variant="outline" size="icon" className="h-12 w-12 rounded-lg hover:bg-[#E4405F] hover:text-white transition-colors">
-                            <InstagramIcon className="h-6 w-6"/>
-                        </Button>
-                        <Button onClick={() => shareOn('telegram')} variant="outline" size="icon" className="h-12 w-12 rounded-lg hover:bg-[#26A5E4] hover:text-white transition-colors">
-                            <TelegramIcon className="h-6 w-6"/>
-                        </Button>
-                         <Button onClick={() => shareOn('youtube')} variant="outline" size="icon" className="h-12 w-12 rounded-lg hover:bg-[#FF0000] hover:text-white transition-colors">
-                            <YouTubeIcon className="h-6 w-6"/>
-                        </Button>
-                        <Button onClick={copyToClipboard} variant="outline" size="icon" className="h-12 w-12 rounded-lg hover:bg-muted-foreground hover:text-background transition-colors">
-                            <Copy className="h-6 w-6" />
-                        </Button>
-                    </div>
+                 <div className="flex flex-wrap items-center justify-center gap-2">
+                    <Button onClick={() => shareOn('whatsapp')} variant="outline" size="icon" className="h-12 w-12 rounded-lg hover:bg-[#25D366] hover:text-white transition-colors">
+                        <WhatsappIcon className="h-6 w-6"/>
+                    </Button>
+                    <Button onClick={() => shareOn('facebook')} variant="outline" size="icon" className="h-12 w-12 rounded-lg hover:bg-[#1877F2] hover:text-white transition-colors">
+                        <FacebookIcon className="h-6 w-6"/>
+                    </Button>
+                    <Button onClick={() => shareOn('instagram')} variant="outline" size="icon" className="h-12 w-12 rounded-lg hover:bg-[#E4405F] hover:text-white transition-colors">
+                        <InstagramIcon className="h-6 w-6"/>
+                    </Button>
+                    <Button onClick={() => shareOn('telegram')} variant="outline" size="icon" className="h-12 w-12 rounded-lg hover:bg-[#26A5E4] hover:text-white transition-colors">
+                        <TelegramIcon className="h-6 w-6"/>
+                    </Button>
+                     <Button onClick={() => shareOn('youtube')} variant="outline" size="icon" className="h-12 w-12 rounded-lg hover:bg-[#FF0000] hover:text-white transition-colors">
+                        <YouTubeIcon className="h-6 w-6"/>
+                    </Button>
+                    <Button onClick={copyToClipboard} variant="outline" size="icon" className="h-12 w-12 rounded-lg hover:bg-muted-foreground hover:text-background transition-colors">
+                        <Copy className="h-6 w-6" />
+                    </Button>
 
                     <NearMeSearch />
-
-                    <div className="flex items-center gap-2">
-                        <Button asChild variant="outline" className="h-12 px-4 rounded-lg">
-                            <Link href="/privacy-policy">
-                                <ShieldCheck className="mr-2" /> Privacy
-                            </Link>
-                        </Button>
-                         <Button asChild variant="outline" className="h-12 px-4 rounded-lg">
-                            <Link href="/terms-and-conditions">
-                                <FileBadge className="mr-2" /> Terms
-                            </Link>
-                        </Button>
-                         <Button asChild variant="outline" className="h-12 px-4 rounded-lg">
-                            <Link href="/contact">
-                                <MessageSquare className="mr-2" /> Contact
-                            </Link>
-                        </Button>
-                    </div>
+                    
+                    <Button asChild variant="outline" className="h-12 px-4 rounded-lg">
+                        <Link href="/privacy-policy">
+                            <ShieldCheck className="mr-2" /> Privacy
+                        </Link>
+                    </Button>
+                     <Button asChild variant="outline" className="h-12 px-4 rounded-lg">
+                        <Link href="/terms-and-conditions">
+                            <FileBadge className="mr-2" /> Terms
+                        </Link>
+                    </Button>
+                     <Button asChild variant="outline" className="h-12 px-4 rounded-lg">
+                        <Link href="/contact">
+                            <MessageSquare className="mr-2" /> Contact
+                        </Link>
+                    </Button>
                  </div>
                  <Separator />
                  <p className="text-center text-sm text-muted-foreground">

@@ -38,7 +38,7 @@ export function NearMeSearch() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="h-12 px-4 rounded-lg">
+        <Button variant="default" className="h-12 px-4 rounded-lg">
           <MapPin className="mr-2" /> Near Me
         </Button>
       </DialogTrigger>
