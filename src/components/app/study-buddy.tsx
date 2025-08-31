@@ -39,7 +39,7 @@ const languages = ['English', 'Spanish', 'French', 'German', 'Mandarin', 'Japane
 const formSchema = z.object({
   subject: z.string().min(1, "Please select a subject."),
   language: z.string().min(1, "Please select a language."),
-  question: z.string().min(10, "Please enter a question with at least 10 characters."),
+  question: z.string().min(1, "Please enter a question."),
   image: z.any().optional(),
 });
 
