@@ -18,7 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { AnswerCard } from "@/components/app/answer-card";
 import { VoiceInputButton } from "@/components/app/voice-input-button";
-import { Send, Loader2, UploadCloud, X, Camera, BrainCircuit, BookOpen, FlaskConical, PenSquare, Code, Calculator, Languages, GraduationCap, Briefcase, Cog, HeartPulse, Sprout } from "lucide-react";
+import { Send, Loader2, UploadCloud, X, Camera, BrainCircuit, BookOpen, FlaskConical, PenSquare, Code, Calculator, Languages, GraduationCap, Briefcase, Cog, HeartPulse, Sprout, Landmark, Palette, Album } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CameraInput } from "@/components/app/camera-input";
@@ -38,6 +38,10 @@ const subjects = [
   { name: "Health Science", icon: HeartPulse },
   { name: "Agriculture", icon: Sprout },
   { name: "Hindi", icon: Languages },
+  { name: "Business Studies", icon: Briefcase },
+  { name: "Beauty & Design", icon: Palette },
+  { name: "Accounting", icon: Album },
+  { name: "Economy", icon: Landmark },
 ];
 const languages = ['Hindi', 'English', 'Spanish', 'French', 'German', 'Mandarin', 'Japanese', 'Russian', 'Bengali', 'Marathi', 'Telugu', 'Tamil', 'Gujarati', 'Urdu', 'Kannada', 'Odia', 'Malayalam', 'Punjabi'];
 
