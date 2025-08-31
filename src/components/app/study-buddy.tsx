@@ -22,6 +22,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CameraInput } from "@/components/app/camera-input";
 import { Separator } from "@/components/ui/separator";
+import { AppShare } from "@/components/app/app-share";
 
 const subjects = [
   { name: "General Knowledge", icon: BrainCircuit },
@@ -311,6 +312,8 @@ export function StudyBuddy() {
             {answer && <AnswerCard answer={answer} question={form.getValues("question")} imagePreview={imagePreview || undefined} />}
           </CardContent>
         </Card>
+
+        <AppShare />
       </div>
     </div>
   );
