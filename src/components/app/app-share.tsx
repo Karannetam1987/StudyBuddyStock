@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Copy, Share2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { FacebookIcon, InstagramIcon, TelegramIcon, WhatsappIcon } from "@/components/app/social-icons";
+import { Separator } from "@/components/ui/separator";
+import Link from "next/link";
 
 export function AppShare() {
     const { toast } = useToast();
@@ -64,22 +66,36 @@ export function AppShare() {
                 </CardTitle>
                 <CardDescription>If you find this app helpful, share it with your friends!</CardDescription>
             </CardHeader>
-            <CardContent className="flex flex-wrap items-center justify-center gap-4">
-                 <Button onClick={() => shareOn('whatsapp')} variant="outline" size="icon" className="h-14 w-14 rounded-full hover:bg-[#25D366] hover:text-white transition-colors">
-                    <WhatsappIcon className="h-7 w-7"/>
-                </Button>
-                <Button onClick={() => shareOn('facebook')} variant="outline" size="icon" className="h-14 w-14 rounded-full hover:bg-[#1877F2] hover:text-white transition-colors">
-                    <FacebookIcon className="h-7 w-7"/>
-                </Button>
-                <Button onClick={() => shareOn('instagram')} variant="outline" size="icon" className="h-14 w-14 rounded-full hover:bg-[#E4405F] hover:text-white transition-colors">
-                    <InstagramIcon className="h-7 w-7"/>
-                </Button>
-                 <Button onClick={() => shareOn('telegram')} variant="outline" size="icon" className="h-14 w-14 rounded-full hover:bg-[#26A5E4] hover:text-white transition-colors">
-                    <TelegramIcon className="h-7 w-7"/>
-                </Button>
-                <Button onClick={copyToClipboard} variant="outline" size="icon" className="h-14 w-14 rounded-full hover:bg-muted-foreground hover:text-background transition-colors">
-                    <Copy className="h-7 w-7" />
-                </Button>
+            <CardContent className="flex flex-col items-center justify-center gap-4">
+                 <div className="flex flex-wrap items-center justify-center gap-4">
+                    <Button onClick={() => shareOn('whatsapp')} variant="outline" size="icon" className="h-14 w-14 rounded-full hover:bg-[#25D366] hover:text-white transition-colors">
+                        <WhatsappIcon className="h-7 w-7"/>
+                    </Button>
+                    <Button onClick={() => shareOn('facebook')} variant="outline" size="icon" className="h-14 w-14 rounded-full hover:bg-[#1877F2] hover:text-white transition-colors">
+                        <FacebookIcon className="h-7 w-7"/>
+                    </Button>
+                    <Button onClick={() => shareOn('instagram')} variant="outline" size="icon" className="h-14 w-14 rounded-full hover:bg-[#E4405F] hover:text-white transition-colors">
+                        <InstagramIcon className="h-7 w-7"/>
+                    </Button>
+                    <Button onClick={() => shareOn('telegram')} variant="outline" size="icon" className="h-14 w-14 rounded-full hover:bg-[#26A5E4] hover:text-white transition-colors">
+                        <TelegramIcon className="h-7 w-7"/>
+                    </Button>
+                    <Button onClick={copyToClipboard} variant="outline" size="icon" className="h-14 w-14 rounded-full hover:bg-muted-foreground hover:text-background transition-colors">
+                        <Copy className="h-7 w-7" />
+                    </Button>
+                 </div>
+                <Separator className="my-4" />
+                <div className="flex items-center gap-6 text-sm">
+                    <Link href="/privacy-policy" className="text-muted-foreground hover:text-primary transition-colors">
+                    Privacy Policy
+                    </Link>
+                    <Link href="/terms-and-conditions" className="text-muted-foreground hover:text-primary transition-colors">
+                    Terms & Conditions
+                    </Link>
+                    <Link href="/contact" className="text-muted-foreground hover:text-primary transition-colors">
+                    Contact
+                    </Link>
+                </div>
             </CardContent>
         </Card>
     );

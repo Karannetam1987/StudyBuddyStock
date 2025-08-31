@@ -10,17 +10,6 @@ export function Footer() {
             <p className="text-center text-sm text-muted-foreground">
                 © {new Date().getFullYear()} Investo Future Consultancy. All rights reserved.
             </p>
-            <div className="flex items-center gap-6 text-sm">
-                <Link href="/privacy-policy" className="text-muted-foreground hover:text-primary transition-colors">
-                Privacy Policy
-                </Link>
-                <Link href="/terms-and-conditions" className="text-muted-foreground hover:text-primary transition-colors">
-                Terms & Conditions
-                </Link>
-                <Link href="/contact" className="text-muted-foreground hover:text-primary transition-colors">
-                Contact
-                </Link>
-            </div>
             </div>
         </div>
     </footer>
