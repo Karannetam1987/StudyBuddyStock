@@ -17,7 +17,7 @@ import { VoiceInputButton } from "@/components/app/voice-input-button";
 import { Send, Loader2, ArrowLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const subjects = ['General Knowledge', 'History', 'Mathematics', 'Physics', 'Chemistry', 'Biology', 'Computer Science', 'Literature'];
+const subjects = ['General Knowledge', 'History', 'Physics', 'Chemistry', 'Biology', 'Computer Science', 'Literature', 'Maths', 'English'];
 const languages = ['English', 'Spanish', 'French', 'German', 'Mandarin', 'Japanese', 'Russian'];
 
 const formSchema = z.object({
