@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -27,9 +28,7 @@ import { AppShare } from "@/components/app/app-share";
 const subjects = [
   { name: "General Knowledge", icon: BrainCircuit },
   { name: "History", icon: BookOpen },
-  { name: "Physics", icon: FlaskConical },
-  { name: "Chemistry", icon: FlaskConical },
-  { name: "Biology", icon: PenSquare },
+  { name: "Science", icon: FlaskConical },
   { name: "Computer Science", icon: Code },
   { name: "Literature", icon: BookOpen },
   { name: "Maths", icon: Calculator },
@@ -322,3 +321,5 @@ export function StudyBuddy() {
     </div>
   );
 }
+
+    
