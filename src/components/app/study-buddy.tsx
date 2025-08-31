@@ -314,6 +314,10 @@ export function StudyBuddy() {
         </Card>
 
         <AppShare />
+
+        <div className="flex justify-center items-center h-40 bg-muted rounded-lg mt-8">
+            <p className="text-muted-foreground">Adsterra Ad Placeholder</p>
+        </div>
       </div>
     </div>
   );
