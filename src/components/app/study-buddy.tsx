@@ -24,6 +24,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CameraInput } from "@/components/app/camera-input";
 import { Separator } from "@/components/ui/separator";
 import { AppShare } from "@/components/app/app-share";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const subjects = [
   { name: "General Knowledge", icon: BrainCircuit },
@@ -61,8 +62,12 @@ export function StudyBuddy() {
   const [isLoading, setIsLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageDataUri, setImageDataUri] = useState<string | null>(null);
+  const [showAllSubjects, setShowAllSubjects] = useState(false);
+  const isMobile = useIsMobile();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  
+  const subjectsToShow = isMobile && !showAllSubjects ? subjects.slice(0, 8) : subjects;
 
   useEffect(() => {
     const storedLanguage = localStorage.getItem('studyBuddyLanguage');
@@ -177,7 +182,7 @@ export function StudyBuddy() {
         <div>
             <h2 className="text-2xl font-semibold tracking-tight mb-4">1. Choose a Subject</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-                {subjects.map(({ name, icon: Icon }) => (
+                {subjectsToShow.map(({ name, icon: Icon }) => (
                     <Card 
                       key={name} 
                       className={`overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer ${selectedSubject === name ? 'ring-2 ring-primary shadow-lg' : ''}`} 
@@ -192,6 +197,13 @@ export function StudyBuddy() {
                     </Card>
                 ))}
             </div>
+             {isMobile && subjects.length > 8 && (
+              <div className="mt-4 text-center">
+                <Button variant="link" onClick={() => setShowAllSubjects(!showAllSubjects)}>
+                  {showAllSubjects ? 'See Less' : 'See More'}
+                </Button>
+              </div>
+            )}
         </div>
 
         <Separator />
