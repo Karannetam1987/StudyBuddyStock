@@ -51,14 +51,14 @@ export function StudyBuddy() {
         <p className="text-muted-foreground mt-2 text-lg">Your AI-powered academic assistant.</p>
       </div>
 
-      <Card className="shadow-lg animate-in fade-in duration-500">
+      <Card className="shadow-lg animate-in fade-in duration-500 bg-card/80">
         <CardHeader>
           <CardTitle>What would you like to do?</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <button
                 onClick={handleImageAnalysis}
-                className="flex flex-col items-center justify-center p-6 bg-card hover:bg-muted rounded-lg border transition-all text-center h-full"
+                className="flex flex-col items-center justify-center p-6 bg-background/50 hover:bg-muted rounded-lg border transition-all text-center h-full"
             >
                 <ImageIcon className="h-10 w-10 mb-2 text-primary" />
                 <h3 className="font-semibold text-foreground">Analyze an Image</h3>
@@ -73,7 +73,7 @@ export function StudyBuddy() {
                         <button
                         key={subject.name}
                         onClick={() => handleSubjectSelect(subject.name)}
-                        className="flex flex-col items-center justify-center p-3 bg-card hover:bg-muted rounded-lg border transition-all text-center h-24"
+                        className="flex flex-col items-center justify-center p-3 bg-background/50 hover:bg-muted rounded-lg border transition-all text-center h-24"
                         >
                         <Icon className="h-6 w-6 mb-1 text-primary" />
                         <span className="text-xs font-medium text-foreground">{subject.name}</span>
@@ -85,7 +85,7 @@ export function StudyBuddy() {
         </CardContent>
       </Card>
 
-      <Card className="shadow-lg animate-in fade-in duration-700">
+      <Card className="shadow-lg animate-in fade-in duration-700 bg-card/80">
           <CardHeader>
               <CardTitle>Recent Activity</CardTitle>
               <CardDescription>Your recent interactions will appear here.</CardDescription>
