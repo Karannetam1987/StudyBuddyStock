@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Copy, Share2 } from "lucide-react";
+import { Copy, Share2, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { FacebookIcon, InstagramIcon, TelegramIcon, WhatsappIcon } from "@/components/app/social-icons";
 import { Separator } from "@/components/ui/separator";
@@ -60,11 +60,21 @@ export function AppShare() {
     return (
         <Card className="bg-muted/50 border-border/50">
             <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                    <Share2 className="h-6 w-6 text-primary" />
-                    Share the App
-                </CardTitle>
-                <CardDescription>If you find this app helpful, share it with your friends!</CardDescription>
+                <div className="flex justify-between items-start">
+                    <div>
+                        <CardTitle className="flex items-center gap-3">
+                            <Share2 className="h-6 w-6 text-primary" />
+                            Share the App
+                        </CardTitle>
+                        <CardDescription>If you find this app helpful, share it with your friends!</CardDescription>
+                    </div>
+                    <div>
+                         <CardTitle className="flex items-center gap-3">
+                            <FileText className="h-6 w-6 text-primary" />
+                            Legality
+                        </CardTitle>
+                    </div>
+                </div>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
                  <div className="flex flex-wrap items-center justify-between gap-4">
