@@ -71,22 +71,22 @@ export function AppShare() {
             <CardContent className="flex flex-col gap-4">
                  <div className="flex flex-wrap items-center justify-between gap-4">
                     <div className="flex items-center gap-2">
-                        <Button onClick={() => shareOn('whatsapp')} variant="outline" size="icon" className="h-12 w-12 rounded-full hover:bg-[#25D366] hover:text-white transition-colors">
+                        <Button onClick={() => shareOn('whatsapp')} variant="outline" size="icon" className="h-12 w-12 rounded-lg hover:bg-[#25D366] hover:text-white transition-colors">
                             <WhatsappIcon className="h-6 w-6"/>
                         </Button>
-                        <Button onClick={() => shareOn('facebook')} variant="outline" size="icon" className="h-12 w-12 rounded-full hover:bg-[#1877F2] hover:text-white transition-colors">
+                        <Button onClick={() => shareOn('facebook')} variant="outline" size="icon" className="h-12 w-12 rounded-lg hover:bg-[#1877F2] hover:text-white transition-colors">
                             <FacebookIcon className="h-6 w-6"/>
                         </Button>
-                        <Button onClick={() => shareOn('instagram')} variant="outline" size="icon" className="h-12 w-12 rounded-full hover:bg-[#E4405F] hover:text-white transition-colors">
+                        <Button onClick={() => shareOn('instagram')} variant="outline" size="icon" className="h-12 w-12 rounded-lg hover:bg-[#E4405F] hover:text-white transition-colors">
                             <InstagramIcon className="h-6 w-6"/>
                         </Button>
-                        <Button onClick={() => shareOn('telegram')} variant="outline" size="icon" className="h-12 w-12 rounded-full hover:bg-[#26A5E4] hover:text-white transition-colors">
+                        <Button onClick={() => shareOn('telegram')} variant="outline" size="icon" className="h-12 w-12 rounded-lg hover:bg-[#26A5E4] hover:text-white transition-colors">
                             <TelegramIcon className="h-6 w-6"/>
                         </Button>
-                         <Button onClick={() => shareOn('youtube')} variant="outline" size="icon" className="h-12 w-12 rounded-full hover:bg-[#FF0000] hover:text-white transition-colors">
+                         <Button onClick={() => shareOn('youtube')} variant="outline" size="icon" className="h-12 w-12 rounded-lg hover:bg-[#FF0000] hover:text-white transition-colors">
                             <YouTubeIcon className="h-6 w-6"/>
                         </Button>
-                        <Button onClick={copyToClipboard} variant="outline" size="icon" className="h-12 w-12 rounded-full hover:bg-muted-foreground hover:text-background transition-colors">
+                        <Button onClick={copyToClipboard} variant="outline" size="icon" className="h-12 w-12 rounded-lg hover:bg-muted-foreground hover:text-background transition-colors">
                             <Copy className="h-6 w-6" />
                         </Button>
                     </div>
