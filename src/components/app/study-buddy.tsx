@@ -18,7 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { AnswerCard } from "@/components/app/answer-card";
 import { VoiceInputButton } from "@/components/app/voice-input-button";
-import { Send, Loader2, UploadCloud, X, Camera, BrainCircuit, BookOpen, FlaskConical, PenSquare, Code, Calculator, Languages, GraduationCap } from "lucide-react";
+import { Send, Loader2, UploadCloud, X, Camera, BrainCircuit, BookOpen, FlaskConical, PenSquare, Code, Calculator, Languages, GraduationCap, Briefcase, Cog, HeartPulse, Sprout } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CameraInput } from "@/components/app/camera-input";
@@ -33,6 +33,11 @@ const subjects = [
   { name: "Literature", icon: BookOpen },
   { name: "Maths", icon: Calculator },
   { name: "English", icon: Languages },
+  { name: "Commerce", icon: Briefcase },
+  { name: "Engineering", icon: Cog },
+  { name: "Health Science", icon: HeartPulse },
+  { name: "Agriculture", icon: Sprout },
+  { name: "Hindi", icon: Languages },
 ];
 const languages = ['Hindi', 'English', 'Spanish', 'French', 'German', 'Mandarin', 'Japanese', 'Russian', 'Bengali', 'Marathi', 'Telugu', 'Tamil', 'Gujarati', 'Urdu', 'Kannada', 'Odia', 'Malayalam', 'Punjabi'];
 
@@ -167,7 +172,7 @@ export function StudyBuddy() {
       <div className="space-y-8">
         <div>
             <h2 className="text-2xl font-semibold tracking-tight mb-4">1. Choose a Subject</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
                 {subjects.map(({ name, icon: Icon }) => (
                     <Card 
                       key={name} 
@@ -321,5 +326,3 @@ export function StudyBuddy() {
     </div>
   );
 }
-
-    
