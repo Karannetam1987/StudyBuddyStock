@@ -85,7 +85,7 @@ export function AppShare() {
                     </Button>
                  </div>
                 <Separator className="my-4" />
-                <div className="flex items-center gap-6 text-sm">
+                <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm">
                     <Link href="/privacy-policy" className="text-muted-foreground hover:text-primary transition-colors">
                     Privacy Policy
                     </Link>
@@ -96,6 +96,9 @@ export function AppShare() {
                     Contact
                     </Link>
                 </div>
+                 <p className="text-center text-sm text-muted-foreground mt-4">
+                    © 2025 Investo Future Consultancy. All rights reserved.
+                </p>
             </CardContent>
         </Card>
     );
