@@ -34,7 +34,7 @@ const subjects = [
   { name: "Maths", icon: Calculator },
   { name: "English", icon: Languages },
 ];
-const languages = ['English', 'Spanish', 'French', 'German', 'Mandarin', 'Japanese', 'Russian'];
+const languages = ['English', 'Spanish', 'French', 'German', 'Mandarin', 'Japanese', 'Russian', 'Hindi', 'Bengali', 'Marathi', 'Telugu', 'Tamil', 'Gujarati', 'Urdu', 'Kannada', 'Odia', 'Malayalam', 'Punjabi'];
 
 const formSchema = z.object({
   subject: z.string().min(1, "Please select a subject."),
