@@ -64,21 +64,21 @@ export function AppShare() {
                 </CardTitle>
                 <CardDescription>If you find this app helpful, share it with your friends!</CardDescription>
             </CardHeader>
-            <CardContent className="flex flex-wrap items-center gap-4">
-                 <Button onClick={() => shareOn('whatsapp')} variant="outline" className="flex-1 min-w-[140px] gap-2">
-                    <WhatsappIcon className="h-5 w-5"/> WhatsApp
+            <CardContent className="flex flex-wrap items-center justify-center gap-4">
+                 <Button onClick={() => shareOn('whatsapp')} variant="outline" size="icon" className="h-14 w-14 rounded-full hover:bg-[#25D366] hover:text-white transition-colors">
+                    <WhatsappIcon className="h-7 w-7"/>
                 </Button>
-                <Button onClick={() => shareOn('facebook')} variant="outline" className="flex-1 min-w-[140px] gap-2">
-                    <FacebookIcon className="h-5 w-5"/> Facebook
+                <Button onClick={() => shareOn('facebook')} variant="outline" size="icon" className="h-14 w-14 rounded-full hover:bg-[#1877F2] hover:text-white transition-colors">
+                    <FacebookIcon className="h-7 w-7"/>
                 </Button>
-                <Button onClick={() => shareOn('instagram')} variant="outline" className="flex-1 min-w-[140px] gap-2">
-                    <InstagramIcon className="h-5 w-5"/> Instagram
+                <Button onClick={() => shareOn('instagram')} variant="outline" size="icon" className="h-14 w-14 rounded-full hover:bg-[#E4405F] hover:text-white transition-colors">
+                    <InstagramIcon className="h-7 w-7"/>
                 </Button>
-                 <Button onClick={() => shareOn('telegram')} variant="outline" className="flex-1 min-w-[140px] gap-2">
-                    <TelegramIcon className="h-5 w-5"/> Telegram
+                 <Button onClick={() => shareOn('telegram')} variant="outline" size="icon" className="h-14 w-14 rounded-full hover:bg-[#26A5E4] hover:text-white transition-colors">
+                    <TelegramIcon className="h-7 w-7"/>
                 </Button>
-                <Button onClick={copyToClipboard} variant="secondary" className="flex-1 min-w-[140px] gap-2">
-                    <Copy className="h-5 w-5" /> Copy Link
+                <Button onClick={copyToClipboard} variant="outline" size="icon" className="h-14 w-14 rounded-full hover:bg-muted-foreground hover:text-background transition-colors">
+                    <Copy className="h-7 w-7" />
                 </Button>
             </CardContent>
         </Card>
