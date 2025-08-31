@@ -3,11 +3,12 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Copy, Share2, FileText, ShieldCheck, FileBadge, MessageSquare } from "lucide-react";
+import { Copy, Share2, FileText, ShieldCheck, FileBadge, MessageSquare, MapPin } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { FacebookIcon, InstagramIcon, TelegramIcon, WhatsappIcon, YouTubeIcon } from "@/components/app/social-icons";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
+import { NearMeSearch } from "@/components/app/near-me-search";
 
 export function AppShare() {
     const { toast } = useToast();
@@ -69,7 +70,7 @@ export function AppShare() {
                 <CardDescription>If you find this app helpful, share it with your friends!</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
-                 <div className="flex flex-wrap items-center justify-between gap-4">
+                 <div className="flex flex-wrap items-center justify-center gap-4">
                     <div className="flex items-center gap-2">
                         <Button onClick={() => shareOn('whatsapp')} variant="outline" size="icon" className="h-12 w-12 rounded-lg hover:bg-[#25D366] hover:text-white transition-colors">
                             <WhatsappIcon className="h-6 w-6"/>
@@ -90,6 +91,9 @@ export function AppShare() {
                             <Copy className="h-6 w-6" />
                         </Button>
                     </div>
+
+                    <NearMeSearch />
+
                     <div className="flex items-center gap-2">
                         <Button asChild variant="outline" className="h-12 px-4 rounded-lg">
                             <Link href="/privacy-policy">
