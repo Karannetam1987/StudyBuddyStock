@@ -5,14 +5,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Copy, Share2, FileText, ShieldCheck, FileBadge, MessageSquare } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { FacebookIcon, InstagramIcon, TelegramIcon, WhatsappIcon } from "@/components/app/social-icons";
+import { FacebookIcon, InstagramIcon, TelegramIcon, WhatsappIcon, YouTubeIcon } from "@/components/app/social-icons";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
 
 export function AppShare() {
     const { toast } = useToast();
-    const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+    const shareUrl = typeof window !== 'undefined' ? 'https://study-buddy-stock.com' : '';
     const shareText = "Check out this awesome StudyBuddy app!";
+    const youtubeUrl = 'https://www.youtube.com/@investofuture';
 
     const copyToClipboard = () => {
         navigator.clipboard.writeText(shareUrl).then(() => {
@@ -29,7 +30,7 @@ export function AppShare() {
         });
     };
 
-    const shareOn = (platform: 'whatsapp' | 'facebook' | 'instagram' | 'telegram') => {
+    const shareOn = (platform: 'whatsapp' | 'facebook' | 'instagram' | 'telegram' | 'youtube') => {
         let url: string;
         const encodedUrl = encodeURIComponent(shareUrl);
         const encodedText = encodeURIComponent(shareText);
@@ -45,13 +46,14 @@ export function AppShare() {
                  url = `https://t.me/share/url?url=${encodedUrl}&text=${encodedText}`;
                 break;
             case 'instagram':
-                // Instagram does not support direct sharing with pre-filled text via URL.
-                // This will open Instagram. The user has to manually share.
                 url = `https://www.instagram.com`;
                 toast({
                     title: "Share on Instagram",
                     description: "Copy the link and share it in your story or bio!",
                   });
+                break;
+            case 'youtube':
+                url = youtubeUrl;
                 break;
         }
         window.open(url, "_blank", "noopener,noreferrer");
@@ -80,6 +82,9 @@ export function AppShare() {
                         </Button>
                         <Button onClick={() => shareOn('telegram')} variant="outline" size="icon" className="h-12 w-12 rounded-full hover:bg-[#26A5E4] hover:text-white transition-colors">
                             <TelegramIcon className="h-6 w-6"/>
+                        </Button>
+                         <Button onClick={() => shareOn('youtube')} variant="outline" size="icon" className="h-12 w-12 rounded-full hover:bg-[#FF0000] hover:text-white transition-colors">
+                            <YouTubeIcon className="h-6 w-6"/>
                         </Button>
                         <Button onClick={copyToClipboard} variant="outline" size="icon" className="h-12 w-12 rounded-full hover:bg-muted-foreground hover:text-background transition-colors">
                             <Copy className="h-6 w-6" />
