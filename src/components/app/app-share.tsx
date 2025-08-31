@@ -59,16 +59,12 @@ export function AppShare() {
 
     return (
         <Card className="bg-muted/50 border-border/50">
-            <CardHeader>
-                <div className="flex justify-between items-start">
-                    <div>
-                        <CardTitle className="flex items-center gap-3">
-                            <Share2 className="h-6 w-6 text-primary" />
-                            Share the App
-                        </CardTitle>
-                        <CardDescription>If you find this app helpful, share it with your friends!</CardDescription>
-                    </div>
-                </div>
+            <CardHeader className="text-center">
+                <CardTitle className="flex items-center justify-center gap-3">
+                    <Share2 className="h-6 w-6 text-primary" />
+                    Share the App
+                </CardTitle>
+                <CardDescription>If you find this app helpful, share it with your friends!</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
                  <div className="flex flex-wrap items-center justify-between gap-4">
