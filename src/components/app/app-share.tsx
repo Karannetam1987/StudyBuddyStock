@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Copy, Share2, FileText } from "lucide-react";
+import { Copy, Share2, FileText, ShieldCheck, FileBadge, MessageSquare } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { FacebookIcon, InstagramIcon, TelegramIcon, WhatsappIcon } from "@/components/app/social-icons";
 import { Separator } from "@/components/ui/separator";
@@ -68,12 +68,6 @@ export function AppShare() {
                         </CardTitle>
                         <CardDescription>If you find this app helpful, share it with your friends!</CardDescription>
                     </div>
-                    <div>
-                         <CardTitle className="flex items-center gap-3">
-                            <FileText className="h-6 w-6 text-primary" />
-                            Legality
-                        </CardTitle>
-                    </div>
                 </div>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
@@ -95,16 +89,22 @@ export function AppShare() {
                             <Copy className="h-6 w-6" />
                         </Button>
                     </div>
-                    <div className="flex flex-col items-end gap-2 text-sm">
-                        <Link href="/privacy-policy" className="text-muted-foreground hover:text-primary transition-colors">
-                        Privacy Policy
-                        </Link>
-                        <Link href="/terms-and-conditions" className="text-muted-foreground hover:text-primary transition-colors">
-                        Terms & Conditions
-                        </Link>
-                        <Link href="/contact" className="text-muted-foreground hover:text-primary transition-colors">
-                        Contact
-                        </Link>
+                    <div className="flex items-center gap-2">
+                        <Button asChild variant="outline" className="h-12 px-4 rounded-lg">
+                            <Link href="/privacy-policy">
+                                <ShieldCheck className="mr-2" /> Privacy
+                            </Link>
+                        </Button>
+                         <Button asChild variant="outline" className="h-12 px-4 rounded-lg">
+                            <Link href="/terms-and-conditions">
+                                <FileBadge className="mr-2" /> Terms
+                            </Link>
+                        </Button>
+                         <Button asChild variant="outline" className="h-12 px-4 rounded-lg">
+                            <Link href="/contact">
+                                <MessageSquare className="mr-2" /> Contact
+                            </Link>
+                        </Button>
                     </div>
                  </div>
                  <Separator />
