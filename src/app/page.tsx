@@ -3,7 +3,6 @@
 
 import { useState, useEffect } from 'react';
 import { Header } from '@/components/app/header';
-import { Footer } from '@/components/app/footer';
 import { StudyBuddy } from '@/components/app/study-buddy';
 import { SplashScreen } from '@/components/app/splash-screen';
 
@@ -27,7 +26,6 @@ export default function Home() {
       <main className="flex-1">
         <StudyBuddy />
       </main>
-      <Footer />
     </div>
   );
 }

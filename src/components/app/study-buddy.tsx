@@ -230,7 +230,7 @@ export function StudyBuddy() {
                               render={({ field }) => (
                               <FormItem>
                                   <FormLabel>Language</FormLabel>
-                                  <Select onValueChange={handleLanguageChange} value={field.value}>
+                                  <Select onValueChange={handleLanguageChange} value={selectedLanguage}>
                                   <FormControl>
                                       <SelectTrigger><SelectValue placeholder="Select a language" /></SelectTrigger>
                                   </FormControl>
