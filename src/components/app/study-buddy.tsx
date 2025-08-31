@@ -34,7 +34,7 @@ const subjects = [
   { name: "Maths", icon: Calculator },
   { name: "English", icon: Languages },
 ];
-const languages = ['English', 'Spanish', 'French', 'German', 'Mandarin', 'Japanese', 'Russian', 'Hindi', 'Bengali', 'Marathi', 'Telugu', 'Tamil', 'Gujarati', 'Urdu', 'Kannada', 'Odia', 'Malayalam', 'Punjabi'];
+const languages = ['Hindi', 'English', 'Spanish', 'French', 'German', 'Mandarin', 'Japanese', 'Russian', 'Bengali', 'Marathi', 'Telugu', 'Tamil', 'Gujarati', 'Urdu', 'Kannada', 'Odia', 'Malayalam', 'Punjabi'];
 
 const formSchema = z.object({
   subject: z.string().min(1, "Please select a subject."),
@@ -47,6 +47,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 export function StudyBuddy() {
   const [selectedSubject, setSelectedSubject] = useState('General Knowledge');
+  const [selectedLanguage, setSelectedLanguage] = useState('Hindi');
   const [answer, setAnswer] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -54,14 +55,26 @@ export function StudyBuddy() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
+  useEffect(() => {
+    const storedLanguage = localStorage.getItem('studyBuddyLanguage');
+    if (storedLanguage && languages.includes(storedLanguage)) {
+      setSelectedLanguage(storedLanguage);
+    }
+  }, []);
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { subject: selectedSubject, language: "English", question: "" },
+    defaultValues: { subject: selectedSubject, language: selectedLanguage, question: "" },
   });
 
   useEffect(() => {
     form.setValue("subject", selectedSubject);
   }, [selectedSubject, form]);
+  
+  useEffect(() => {
+    form.setValue("language", selectedLanguage);
+  }, [selectedLanguage, form]);
+
 
   const { isRecording, toggleRecording, isAvailable } = useSpeechToText({
     onTranscriptChange: (transcript) => form.setValue("question", transcript),
@@ -70,6 +83,12 @@ export function StudyBuddy() {
   const handleSubjectClick = (subject: string) => {
     setSelectedSubject(subject);
   };
+
+  const handleLanguageChange = (language: string) => {
+    setSelectedLanguage(language);
+    localStorage.setItem('studyBuddyLanguage', language);
+    form.setValue("language", language);
+  }
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -202,7 +221,7 @@ export function StudyBuddy() {
                               render={({ field }) => (
                               <FormItem>
                                   <FormLabel>Language</FormLabel>
-                                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <Select onValueChange={handleLanguageChange} value={field.value}>
                                   <FormControl>
                                       <SelectTrigger><SelectValue placeholder="Select a language" /></SelectTrigger>
                                   </FormControl>
