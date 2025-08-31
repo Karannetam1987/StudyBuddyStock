@@ -315,8 +315,8 @@ export function StudyBuddy() {
 
         <AppShare />
 
-        <div className="flex justify-center items-center h-40 bg-muted rounded-lg mt-8">
-            <p className="text-muted-foreground">Adsterra Ad Placeholder</p>
+        <div className="flex justify-center items-center h-[50px] w-[320px] bg-muted rounded-lg mt-8 mx-auto">
+            <p className="text-muted-foreground text-sm">Adsterra Ad Placeholder (320x50)</p>
         </div>
       </div>
     </div>
