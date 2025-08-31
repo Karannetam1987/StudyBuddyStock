@@ -1,4 +1,5 @@
 import { Header } from '@/components/app/header';
+import { Footer } from '@/components/app/footer';
 import { StudyBuddy } from '@/components/app/study-buddy';
 
 export default function Home() {
@@ -8,6 +9,7 @@ export default function Home() {
       <main className="flex-1">
         <StudyBuddy />
       </main>
+      <Footer />
     </div>
   );
 }
