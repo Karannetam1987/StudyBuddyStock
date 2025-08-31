@@ -3,9 +3,9 @@ import { StudyBuddy } from '@/components/app/study-buddy';
 
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-muted/30">
       <Header />
-      <main className="flex-1 container mx-auto py-8 px-4">
+      <main className="flex-1">
         <StudyBuddy />
       </main>
     </div>
