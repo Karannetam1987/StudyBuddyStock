@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -17,8 +17,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { AnswerCard } from "@/components/app/answer-card";
 import { VoiceInputButton } from "@/components/app/voice-input-button";
-import { Send, Loader2, UploadCloud, X } from "lucide-react";
+import { Send, Loader2, UploadCloud, X, ArrowLeft, Camera } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CameraInput } from "@/components/app/camera-input";
 
 const subjects = ['General Knowledge', 'History', 'Physics', 'Chemistry', 'Biology', 'Computer Science', 'Literature', 'Maths', 'English'];
 const languages = ['English', 'Spanish', 'French', 'German', 'Mandarin', 'Japanese', 'Russian'];
@@ -32,7 +34,12 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export function TextQuestion() {
+interface TextQuestionProps {
+  onBack: () => void;
+  initialSubject: string;
+}
+
+export function TextQuestion({ onBack, initialSubject }: TextQuestionProps) {
   const [answer, setAnswer] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -42,8 +49,13 @@ export function TextQuestion() {
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { subject: "General Knowledge", language: "English", question: "" },
+    defaultValues: { subject: initialSubject, language: "English", question: "" },
   });
+  
+  useEffect(() => {
+    form.setValue("subject", initialSubject);
+  }, [initialSubject, form]);
+
 
   const { isRecording, toggleRecording, isAvailable } = useSpeechToText({
     onTranscriptChange: (transcript) => form.setValue("question", transcript),
@@ -52,19 +64,32 @@ export function TextQuestion() {
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (file.size > 4 * 1024 * 1024) { // 4MB limit for Gemini
-        toast({ variant: "destructive", title: "Image too large", description: "Please upload an image smaller than 4MB." });
-        return;
-      }
-      form.setValue("image", file);
-      const previewUrl = URL.createObjectURL(file);
-      setImagePreview(previewUrl);
-
-      const reader = new FileReader();
-      reader.onload = (e) => setImageDataUri(e.target?.result as string);
-      reader.readAsDataURL(file);
+      processFile(file);
     }
   };
+  
+  const processFile = (file: File) => {
+    if (file.size > 4 * 1024 * 1024) { // 4MB limit for Gemini
+      toast({ variant: "destructive", title: "Image too large", description: "Please upload an image smaller than 4MB." });
+      return;
+    }
+    form.setValue("image", file);
+    const previewUrl = URL.createObjectURL(file);
+    setImagePreview(previewUrl);
+
+    const reader = new FileReader();
+    reader.onload = (e) => setImageDataUri(e.target?.result as string);
+    reader.readAsDataURL(file);
+  }
+
+  const handleCameraCapture = (dataUri: string) => {
+     fetch(dataUri)
+      .then(res => res.blob())
+      .then(blob => {
+        const file = new File([blob], "capture.jpg", { type: "image/jpeg" });
+        processFile(file);
+      });
+  }
   
   const removeImage = () => {
     setImagePreview(null);
@@ -100,10 +125,14 @@ export function TextQuestion() {
 
   return (
     <div className="container mx-auto py-8 px-4">
+       <Button variant="ghost" onClick={onBack} className="mb-4">
+        <ArrowLeft className="mr-2 h-4 w-4" />
+        Back to Subjects
+      </Button>
       <Card className="shadow-lg">
         <CardHeader>
-            <CardTitle>StudyBuddy</CardTitle>
-            <CardDescription>Ask a question, with or without an image.</CardDescription>
+            <CardTitle>Ask a Question</CardTitle>
+            <CardDescription>Ask a question, with or without an image. Your selected subject is {initialSubject}.</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -151,27 +180,38 @@ export function TextQuestion() {
                         control={form.control}
                         name="image"
                         render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="flex flex-col">
                             <FormLabel>Image (Optional)</FormLabel>
-                            <FormControl>
-                            {imagePreview ? (
+                             {imagePreview ? (
                                 <div className="relative">
-                                <Image src={imagePreview} width={600} height={400} alt="Image preview" className="rounded-lg w-full object-contain max-h-48" />
-                                <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-8 w-8" onClick={removeImage}>
-                                    <X className="h-4 w-4" />
-                                </Button>
+                                    <Image src={imagePreview} width={600} height={400} alt="Image preview" className="rounded-lg w-full object-contain max-h-48 border" />
+                                    <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-8 w-8" onClick={removeImage}>
+                                        <X className="h-4 w-4" />
+                                    </Button>
                                 </div>
                             ) : (
-                                <label htmlFor="image-upload" className="flex flex-col items-center justify-center w-full h-full border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-muted transition-colors">
-                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                    <UploadCloud className="w-10 h-10 mb-3 text-muted-foreground" />
-                                    <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span></p>
-                                    <p className="text-xs text-muted-foreground">PNG, JPG, or WEBP (MAX. 4MB)</p>
-                                </div>
-                                <Input id="image-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={handleImageChange} ref={fileInputRef} />
-                                </label>
+                                <Tabs defaultValue="upload" className="w-full">
+                                    <TabsList className="grid w-full grid-cols-2">
+                                        <TabsTrigger value="upload"><UploadCloud className="mr-2"/>Upload</TabsTrigger>
+                                        <TabsTrigger value="camera"><Camera className="mr-2"/>Camera</TabsTrigger>
+                                    </TabsList>
+                                    <TabsContent value="upload">
+                                        <FormControl>
+                                            <label htmlFor="image-upload" className="flex flex-col items-center justify-center w-full h-full border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-muted transition-colors p-6">
+                                                <div className="flex flex-col items-center justify-center">
+                                                    <UploadCloud className="w-10 h-10 mb-3 text-muted-foreground" />
+                                                    <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span></p>
+                                                    <p className="text-xs text-muted-foreground">PNG, JPG, or WEBP (MAX. 4MB)</p>
+                                                </div>
+                                                <Input id="image-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={handleImageChange} ref={fileInputRef} />
+                                            </label>
+                                        </FormControl>
+                                    </TabsContent>
+                                    <TabsContent value="camera">
+                                        <CameraInput onCapture={handleCameraCapture}/>
+                                    </TabsContent>
+                                </Tabs>
                             )}
-                            </FormControl>
                             <FormMessage />
                         </FormItem>
                         )}
