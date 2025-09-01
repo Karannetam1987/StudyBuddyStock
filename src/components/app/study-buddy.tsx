@@ -5,8 +5,6 @@ import { useState, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { answerAcademicQuestion } from "@/ai/flows/answer-academic-questions";
-import { analyzeImageAndAnswer } from "@/ai/flows/analyze-images-and-answer-questions";
 import { useToast } from "@/hooks/use-toast";
 import { useSpeechToText } from "@/hooks/use-speech-to-text";
 import Image from "next/image";
@@ -149,9 +147,21 @@ export function StudyBuddy() {
     try {
       let result;
       if (imageDataUri) {
-        result = await analyzeImageAndAnswer({ imageDataUri, question: values.question });
+        const response = await fetch('/api/analyze-image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imageDataUri, question: values.question }),
+        });
+        if (!response.ok) throw new Error('Failed to analyze image');
+        result = await response.json();
       } else {
-        result = await answerAcademicQuestion(values);
+        const response = await fetch('/api/answer-question', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(values),
+        });
+        if (!response.ok) throw new Error('Failed to get answer');
+        result = await response.json();
       }
       setAnswer(result.answer);
     } catch (error) {
