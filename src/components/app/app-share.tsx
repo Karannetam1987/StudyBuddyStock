@@ -83,7 +83,7 @@ export function AppShare() {
                     <Button onClick={() => shareOn('telegram')} variant="outline" size="icon" className="h-12 w-12 rounded-lg hover:bg-[#26A5E4] hover:text-white transition-colors">
                         <TelegramIcon className="h-6 w-6"/>
                     </Button>
-                    <Button onClick={() => shareOn('youtube')} variant-outline size="icon" className="h-12 w-12 rounded-lg hover:bg-[#FF0000] hover:text-white transition-colors">
+                    <Button onClick={() => shareOn('youtube')} variant="outline" size="icon" className="h-12 w-12 rounded-lg hover:bg-[#FF0000] hover:text-white transition-colors">
                         <YouTubeIcon className="h-6 w-6"/>
                     </Button>
                     <Button onClick={copyToClipboard} variant="outline" size="icon" className="h-12 w-12 rounded-lg hover:bg-muted-foreground hover:text-background transition-colors">
