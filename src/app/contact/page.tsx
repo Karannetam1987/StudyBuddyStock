@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Building, Mail, Globe, Lock, Palette, FileText, Settings, ChevronDown, KeyRound, MonitorPlay, Facebook, Settings2, BrainCircuit, Bot, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Building, Mail, Globe, Lock, Palette, FileText, Settings, ChevronDown, KeyRound, MonitorPlay, Facebook, Settings2, BrainCircuit, Bot, ShieldCheck, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useToast } from '@/hooks/use-toast';
@@ -97,12 +97,14 @@ export default function Contact() {
 
   const [showSaveApiOtpDialog, setShowSaveApiOtpDialog] = useState(false);
   const [saveApiOtp, setSaveApiOtp] = useState('');
+  const [isSendingSaveApiOtp, setIsSendingSaveApiOtp] = useState(false);
   
   const [showChangeEmailDialog, setShowChangeEmailDialog] = useState(false);
   const [changeEmailStep, setChangeEmailStep] = useState(1);
   const [newAdminEmail, setNewAdminEmail] = useState('');
   const [oldEmailOtp, setOldEmailOtp] = useState('');
   const [newEmailOtp, setNewEmailOtp] = useState('');
+  const [isSendingChangeEmailOtps, setIsSendingChangeEmailOtps] = useState(false);
 
 
   useEffect(() => {
@@ -196,13 +198,31 @@ export default function Contact() {
     });
   };
   
-  const handleSaveApiAndAds = () => {
-    console.log("Requesting OTP for", adminEmail);
-    setShowSaveApiOtpDialog(true);
-    toast({ title: "OTP Sent", description: "An OTP has been sent to your admin email (mocked)." });
+  const handleSaveApiAndAds = async () => {
+    setIsSendingSaveApiOtp(true);
+    try {
+        const response = await fetch('/api/send-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: adminEmail, type: 'saveApi' }),
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to send OTP');
+        }
+        setShowSaveApiOtpDialog(true);
+        toast({ title: "OTP Sent", description: `An OTP has been sent to ${adminEmail}.` });
+    } catch (error: any) {
+        console.error(error);
+        toast({ variant: "destructive", title: "Error", description: error.message });
+    } finally {
+        setIsSendingSaveApiOtp(false);
+    }
   };
 
   const handleSaveApiOtpVerification = () => {
+    // In a real app, you'd verify the OTP against the backend.
+    // For this prototype, we'll just check if it's a 6-digit number.
     if (saveApiOtp && saveApiOtp.length === 6) {
         localStorage.setItem('apiKeys', JSON.stringify(apiKeys));
         localStorage.setItem('adsConfig', JSON.stringify(adsConfig));
@@ -214,16 +234,38 @@ export default function Contact() {
     }
   };
   
-  const handleChangeEmailSendOtps = () => {
+  const handleChangeEmailSendOtps = async () => {
      if (!newAdminEmail || !/^\S+@\S+\.\S+$/.test(newAdminEmail)) {
       toast({ variant: "destructive", title: "Invalid Email", description: "Please enter a valid new admin email." });
       return;
     }
-    setChangeEmailStep(2);
-    toast({ title: "OTPs Sent", description: `(Mock) OTPs sent to ${adminEmail} and ${newAdminEmail}.` });
+    setIsSendingChangeEmailOtps(true);
+    try {
+        const response = await fetch('/api/send-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: adminEmail,
+                newEmail: newAdminEmail,
+                type: 'changeAdminEmail'
+            }),
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to send OTPs');
+        }
+        setChangeEmailStep(2);
+        toast({ title: "OTPs Sent", description: `OTPs sent to ${adminEmail} and ${newAdminEmail}.` });
+    } catch (error: any) {
+         console.error(error);
+         toast({ variant: "destructive", title: "Error", description: error.message });
+    } finally {
+        setIsSendingChangeEmailOtps(false);
+    }
   }
 
   const handleVerifyChangeEmailOtps = () => {
+     // In a real app, you'd verify both OTPs against the backend.
     if (oldEmailOtp.length === 6 && newEmailOtp.length === 6) {
         localStorage.setItem('adminEmail', newAdminEmail);
         setAdminEmail(newAdminEmail);
@@ -413,7 +455,10 @@ export default function Contact() {
                                         <Textarea id="ad-code" value={adsConfig.code} onChange={(e) => setAdsConfig({...adsConfig, code: e.target.value})} placeholder="Paste your ad script or ID here" rows={4} />
                                     </div>
                                 </div>
-                                <Button onClick={handleSaveApiAndAds}>Save API & Ads</Button>
+                                <Button onClick={handleSaveApiAndAds} disabled={isSendingSaveApiOtp}>
+                                    {isSendingSaveApiOtp && <Loader2 className="mr-2 animate-spin" />}
+                                    Save API & Ads
+                                </Button>
                               </CollapsibleContent>
                             </Collapsible>
 
@@ -437,7 +482,7 @@ export default function Contact() {
           <DialogHeader>
             <DialogTitle>OTP Verification</DialogTitle>
             <DialogDescription>
-              To protect your account, please enter the OTP sent to {adminEmail}. (This is a mock, enter any 6 digits).
+              To protect your account, please enter the OTP sent to {adminEmail}.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
@@ -513,7 +558,12 @@ export default function Contact() {
             <DialogClose asChild>
                 <Button variant="outline">Cancel</Button>
             </DialogClose>
-            {changeEmailStep === 1 && <Button onClick={handleChangeEmailSendOtps}>Send OTPs</Button>}
+            {changeEmailStep === 1 && 
+                <Button onClick={handleChangeEmailSendOtps} disabled={isSendingChangeEmailOtps}>
+                    {isSendingChangeEmailOtps && <Loader2 className="mr-2 animate-spin" />}
+                    Send OTPs
+                </Button>
+            }
             {changeEmailStep === 2 && <Button onClick={handleVerifyChangeEmailOtps}><ShieldCheck className="mr-2"/>Verify & Change</Button>}
           </DialogFooter>
         </DialogContent>
@@ -521,5 +571,3 @@ export default function Contact() {
     </div>
   );
 }
-
-    
