@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Building, Mail, Globe, Lock, Palette, FileText, Settings, ChevronDown, KeyRound, MonitorPlay, Facebook, Settings2 } from 'lucide-react';
+import { ArrowLeft, Building, Mail, Globe, Lock, Palette, FileText, Settings, ChevronDown, KeyRound, MonitorPlay, Facebook, Settings2, BrainCircuit, Bot } from 'lucide-react';
 import Link from 'next/link';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useToast } from '@/hooks/use-toast';
@@ -76,6 +76,14 @@ const hslToHex = (hslStr: string): string => {
     return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 };
 
+const OpenseaIcon = () => (
+    <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" fill="currentColor"/>
+        <path d="M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" fill="currentColor"/>
+        <path d="M12 10.5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5z" fill="currentColor"/>
+    </svg>
+);
+
 
 export default function Contact() {
   const [email, setEmail] = useState('');
@@ -90,7 +98,7 @@ export default function Contact() {
   const [contactInfo, setContactInfo] = useState(DEFAULT_CONTACT_INFO);
   const [editedContactInfo, setEditedContactInfo] = useState(DEFAULT_CONTACT_INFO);
   
-  const [apiKeys, setApiKeys] = useState({ google: '', facebook: '' });
+  const [apiKeys, setApiKeys] = useState({ google: '', facebook: '', gemini: '', opensea: '' });
   const [adsConfig, setAdsConfig] = useState({ provider: 'none', code: '' });
 
 
@@ -325,6 +333,14 @@ export default function Contact() {
                                     <div className="space-y-2">
                                         <Label htmlFor="facebook-api-key">Facebook API Key</Label>
                                         <Input id="facebook-api-key" name="facebook" value={apiKeys.facebook} onChange={handleApiKeyChange} placeholder="Enter your Facebook API Key" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="gemini-api-key" className="flex items-center gap-2"><Bot/>Google Gemini API Key</Label>
+                                        <Input id="gemini-api-key" name="gemini" value={apiKeys.gemini} onChange={handleApiKeyChange} placeholder="Enter your Google Gemini API Key" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="opensea-api-key" className="flex items-center gap-2"><OpenseaIcon/>Opensea API Key</Label>
+                                        <Input id="opensea-api-key" name="opensea" value={apiKeys.opensea} onChange={handleApiKeyChange} placeholder="Enter your Opensea API Key" />
                                     </div>
                                 </div>
                                 <Separator/>
