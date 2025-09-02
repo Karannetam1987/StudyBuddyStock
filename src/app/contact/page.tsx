@@ -8,14 +8,16 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Building, Mail, Globe, Lock, Palette, FileText, Settings } from 'lucide-react';
+import { ArrowLeft, Building, Mail, Globe, Lock, Palette, FileText, Settings, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 const ADMIN_EMAIL = "karannetam4@gmail.com";
 
 export default function Contact() {
   const [email, setEmail] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
+  const [themeCustomizationOpen, setThemeCustomizationOpen] = useState(false);
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
@@ -108,13 +110,36 @@ export default function Contact() {
                     
                     <div className="space-y-4 pt-4 border-t">
                        <h3 className="font-semibold text-lg">Dashboard</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <Button variant="outline" disabled><Palette className="mr-2" /> Theme Customization</Button>
-                            <Button variant="outline" disabled><FileText className="mr-2" /> Content Management</Button>
-                            <Button variant="outline" disabled><Settings className="mr-2" /> API & Ads</Button>
-                            <Button variant="outline" disabled><Mail className="mr-2" /> Change Admin Email</Button>
+                        <div className="space-y-2">
+                           <Collapsible open={themeCustomizationOpen} onOpenChange={setThemeCustomizationOpen}>
+                              <CollapsibleTrigger asChild>
+                                <Button variant="outline" className="w-full justify-between">
+                                  <span className="flex items-center"><Palette className="mr-2" /> Theme Customization</span>
+                                  <ChevronDown className={`transition-transform ${themeCustomizationOpen ? 'rotate-180' : ''}`} />
+                                </Button>
+                              </CollapsibleTrigger>
+                              <CollapsibleContent className="p-4 mt-2 border rounded-lg space-y-4">
+                                  <p className="text-sm text-muted-foreground">Change the look and feel of the application. Note: This feature is under development.</p>
+                                  <div className="space-y-2">
+                                      <Label htmlFor="primary-color">Primary Color</Label>
+                                      <Input id="primary-color" type="color" defaultValue="#6a11cb" disabled />
+                                  </div>
+                                   <div className="space-y-2">
+                                      <Label htmlFor="background-color">Background Color</Label>
+                                      <Input id="background-color" type="color" defaultValue="#1a202c" disabled />
+                                  </div>
+                                   <div className="space-y-2">
+                                      <Label htmlFor="accent-color">Accent Color</Label>
+                                      <Input id="accent-color" type="color" defaultValue="#6a11cb" disabled />
+                                  </div>
+                                  <Button disabled>Save Theme</Button>
+                              </CollapsibleContent>
+                            </Collapsible>
+                            <Button variant="outline" disabled className="w-full"><FileText className="mr-2" /> Content Management</Button>
+                            <Button variant="outline" disabled className="w-full"><Settings className="mr-2" /> API & Ads</Button>
+                            <Button variant="outline" disabled className="w-full"><Mail className="mr-2" /> Change Admin Email</Button>
                         </div>
-                        <p className="text-sm text-muted-foreground">Note: Feature implementation is pending.</p>
+                        <p className="text-sm text-muted-foreground">Note: More features are pending implementation.</p>
                     </div>
 
                     <Button onClick={handleAdminLogout} variant="destructive" className="w-full mt-4">
