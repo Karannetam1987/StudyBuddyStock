@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Building, Mail, Globe, Lock, Palette, FileText, Settings, ChevronDown, KeyRound, MonitorPlay } from 'lucide-react';
+import { ArrowLeft, Building, Mail, Globe, Lock, Palette, FileText, Settings, ChevronDown, KeyRound, MonitorPlay, Facebook, Settings2 } from 'lucide-react';
 import Link from 'next/link';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useToast } from '@/hooks/use-toast';
@@ -90,12 +90,11 @@ export default function Contact() {
   const [contactInfo, setContactInfo] = useState(DEFAULT_CONTACT_INFO);
   const [editedContactInfo, setEditedContactInfo] = useState(DEFAULT_CONTACT_INFO);
   
-  const [googleApiKey, setGoogleApiKey] = useState('');
+  const [apiKeys, setApiKeys] = useState({ google: '', facebook: '' });
   const [adsConfig, setAdsConfig] = useState({ provider: 'none', code: '' });
 
 
   useEffect(() => {
-    // Load initial colors from CSS variables once mounted
     const primaryHsl = getCssVariable('--primary');
     const backgroundHsl = getCssVariable('--background');
     const accentHsl = getCssVariable('--accent');
@@ -104,7 +103,6 @@ export default function Contact() {
     setBackgroundColor(hslToHex(backgroundHsl));
     setAccentColor(hslToHex(accentHsl));
 
-    // Load contact info from local storage
     const savedContactInfo = localStorage.getItem('contactInfo');
     if (savedContactInfo) {
         const info = JSON.parse(savedContactInfo);
@@ -112,13 +110,11 @@ export default function Contact() {
         setEditedContactInfo(info);
     }
 
-    // Load API & Ads info from local storage
-    const savedApiKey = localStorage.getItem('googleApiKey');
-    if(savedApiKey) setGoogleApiKey(savedApiKey);
+    const savedApiKeys = localStorage.getItem('apiKeys');
+    if(savedApiKeys) setApiKeys(JSON.parse(savedApiKeys));
 
     const savedAdsConfig = localStorage.getItem('adsConfig');
     if(savedAdsConfig) setAdsConfig(JSON.parse(savedAdsConfig));
-
 
   }, [isAdmin]);
 
@@ -174,9 +170,16 @@ export default function Contact() {
     setContactInfo(editedContactInfo);
     toast({ title: "Contact Info Saved!", description: "The contact information has been updated." });
   };
+
+  const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setApiKeys({
+      ...apiKeys,
+      [e.target.name]: e.target.value,
+    });
+  };
   
   const handleSaveApiAndAds = () => {
-    localStorage.setItem('googleApiKey', googleApiKey);
+    localStorage.setItem('apiKeys', JSON.stringify(apiKeys));
     localStorage.setItem('adsConfig', JSON.stringify(adsConfig));
     toast({ title: "API & Ads Saved!", description: "Your settings have been updated." });
   };
@@ -314,10 +317,14 @@ export default function Contact() {
                               <CollapsibleContent className="p-4 mt-2 border rounded-lg space-y-6">
                                 <div className='space-y-4'>
                                     <h4 className="font-semibold flex items-center gap-2"><KeyRound/> API Key Management</h4>
-                                    <p className="text-sm text-muted-foreground">Manage API keys for services like Google Maps.</p>
+                                    <p className="text-sm text-muted-foreground">Manage API keys for various services.</p>
                                     <div className="space-y-2">
-                                        <Label htmlFor="googleApiKey">Google API Key</Label>
-                                        <Input id="googleApiKey" value={googleApiKey} onChange={(e) => setGoogleApiKey(e.target.value)} placeholder="Enter your Google API Key" />
+                                        <Label htmlFor="google-api-key">Google API Key</Label>
+                                        <Input id="google-api-key" name="google" value={apiKeys.google} onChange={handleApiKeyChange} placeholder="Enter your Google API Key" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="facebook-api-key">Facebook API Key</Label>
+                                        <Input id="facebook-api-key" name="facebook" value={apiKeys.facebook} onChange={handleApiKeyChange} placeholder="Enter your Facebook API Key" />
                                     </div>
                                 </div>
                                 <Separator/>
@@ -363,5 +370,3 @@ export default function Contact() {
     </div>
   );
 }
-
-    
