@@ -8,10 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Building, Mail, Globe, Lock, Palette, FileText, Settings, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Building, Mail, Globe, Lock, Palette, FileText, Settings, ChevronDown, KeyRound, MonitorPlay } from 'lucide-react';
 import Link from 'next/link';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useToast } from '@/hooks/use-toast';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const ADMIN_EMAIL = "karannetam4@gmail.com";
 
@@ -78,7 +80,7 @@ const hslToHex = (hslStr: string): string => {
 export default function Contact() {
   const [email, setEmail] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
-  const [adminPanelOpen, setAdminPanelOpen] = useState({theme: false, content: false});
+  const [adminPanelOpen, setAdminPanelOpen] = useState({theme: false, content: false, api: false});
   const { toast } = useToast();
 
   const [primaryColor, setPrimaryColor] = useState('#000000');
@@ -87,6 +89,9 @@ export default function Contact() {
 
   const [contactInfo, setContactInfo] = useState(DEFAULT_CONTACT_INFO);
   const [editedContactInfo, setEditedContactInfo] = useState(DEFAULT_CONTACT_INFO);
+  
+  const [googleApiKey, setGoogleApiKey] = useState('');
+  const [adsConfig, setAdsConfig] = useState({ provider: 'none', code: '' });
 
 
   useEffect(() => {
@@ -106,6 +111,14 @@ export default function Contact() {
         setContactInfo(info);
         setEditedContactInfo(info);
     }
+
+    // Load API & Ads info from local storage
+    const savedApiKey = localStorage.getItem('googleApiKey');
+    if(savedApiKey) setGoogleApiKey(savedApiKey);
+
+    const savedAdsConfig = localStorage.getItem('adsConfig');
+    if(savedAdsConfig) setAdsConfig(JSON.parse(savedAdsConfig));
+
 
   }, [isAdmin]);
 
@@ -160,6 +173,12 @@ export default function Contact() {
     localStorage.setItem('contactInfo', JSON.stringify(editedContactInfo));
     setContactInfo(editedContactInfo);
     toast({ title: "Contact Info Saved!", description: "The contact information has been updated." });
+  };
+  
+  const handleSaveApiAndAds = () => {
+    localStorage.setItem('googleApiKey', googleApiKey);
+    localStorage.setItem('adsConfig', JSON.stringify(adsConfig));
+    toast({ title: "API & Ads Saved!", description: "Your settings have been updated." });
   };
 
   return (
@@ -285,7 +304,48 @@ export default function Contact() {
                                   <Button onClick={handleSaveContactInfo}>Save Contact Info</Button>
                               </CollapsibleContent>
                             </Collapsible>
-                            <Button variant="outline" disabled className="w-full"><Settings className="mr-2" /> API & Ads</Button>
+                            <Collapsible open={adminPanelOpen.api} onOpenChange={(isOpen) => setAdminPanelOpen({...adminPanelOpen, api: isOpen})}>
+                              <CollapsibleTrigger asChild>
+                                <Button variant="outline" className="w-full justify-between">
+                                  <span className="flex items-center"><Settings className="mr-2" /> API & Ads</span>
+                                  <ChevronDown className={`transition-transform ${adminPanelOpen.api ? 'rotate-180' : ''}`} />
+                                </Button>
+                              </CollapsibleTrigger>
+                              <CollapsibleContent className="p-4 mt-2 border rounded-lg space-y-6">
+                                <div className='space-y-4'>
+                                    <h4 className="font-semibold flex items-center gap-2"><KeyRound/> API Key Management</h4>
+                                    <p className="text-sm text-muted-foreground">Manage API keys for services like Google Maps.</p>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="googleApiKey">Google API Key</Label>
+                                        <Input id="googleApiKey" value={googleApiKey} onChange={(e) => setGoogleApiKey(e.target.value)} placeholder="Enter your Google API Key" />
+                                    </div>
+                                </div>
+                                <Separator/>
+                                <div className='space-y-4'>
+                                    <h4 className="font-semibold flex items-center gap-2"><MonitorPlay/> Ads Management</h4>
+                                    <p className="text-sm text-muted-foreground">Configure your ad provider and settings.</p>
+                                    <div className="space-y-2">
+                                      <Label>Ad Provider</Label>
+                                      <Select value={adsConfig.provider} onValueChange={(value) => setAdsConfig({...adsConfig, provider: value})}>
+                                        <SelectTrigger>
+                                          <SelectValue placeholder="Select an ad provider" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="none">None</SelectItem>
+                                          <SelectItem value="adsterra">Adsterra</SelectItem>
+                                          <SelectItem value="adsense">Google AdSense</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="ad-code">Ad Code/ID</Label>
+                                        <Textarea id="ad-code" value={adsConfig.code} onChange={(e) => setAdsConfig({...adsConfig, code: e.target.value})} placeholder="Paste your ad script or ID here" rows={4} />
+                                    </div>
+                                </div>
+                                <Button onClick={handleSaveApiAndAds}>Save API & Ads</Button>
+                              </CollapsibleContent>
+                            </Collapsible>
+
                             <Button variant="outline" disabled className="w-full"><Mail className="mr-2" /> Change Admin Email</Button>
                         </div>
                         <p className="text-sm text-muted-foreground">Note: More features are pending implementation.</p>
