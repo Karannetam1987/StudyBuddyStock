@@ -14,9 +14,9 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 
-const ADMIN_EMAIL = "karannetam4@gmail.com";
+const DEFAULT_ADMIN_EMAIL = "karannetam4@gmail.com";
 
 const DEFAULT_CONTACT_INFO = {
     companyName: "Investo Future Consultancy",
@@ -79,8 +79,9 @@ const hslToHex = (hslStr: string): string => {
 
 
 export default function Contact() {
-  const [email, setEmail] = useState('');
+  const [loginEmail, setLoginEmail] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
+  const [adminEmail, setAdminEmail] = useState(DEFAULT_ADMIN_EMAIL);
   const [adminPanelOpen, setAdminPanelOpen] = useState({theme: false, content: false, api: false});
   const { toast } = useToast();
 
@@ -94,10 +95,22 @@ export default function Contact() {
   const [apiKeys, setApiKeys] = useState({ google: '', facebook: '', gemini: '', openai: '' });
   const [adsConfig, setAdsConfig] = useState({ provider: 'none', code: '' });
 
-  const [showOtpDialog, setShowOtpDialog] = useState(false);
-  const [otp, setOtp] = useState('');
+  const [showSaveApiOtpDialog, setShowSaveApiOtpDialog] = useState(false);
+  const [saveApiOtp, setSaveApiOtp] = useState('');
+  
+  const [showChangeEmailDialog, setShowChangeEmailDialog] = useState(false);
+  const [changeEmailStep, setChangeEmailStep] = useState(1);
+  const [newAdminEmail, setNewAdminEmail] = useState('');
+  const [oldEmailOtp, setOldEmailOtp] = useState('');
+  const [newEmailOtp, setNewEmailOtp] = useState('');
+
 
   useEffect(() => {
+    // Load Admin Email
+    const savedAdminEmail = localStorage.getItem('adminEmail');
+    setAdminEmail(savedAdminEmail || DEFAULT_ADMIN_EMAIL);
+
+    // Load Theme
     const primaryHsl = getCssVariable('--primary');
     const backgroundHsl = getCssVariable('--background');
     const accentHsl = getCssVariable('--accent');
@@ -106,6 +119,7 @@ export default function Contact() {
     setBackgroundColor(hslToHex(backgroundHsl));
     setAccentColor(hslToHex(accentHsl));
 
+    // Load Contact Info
     const savedContactInfo = localStorage.getItem('contactInfo');
     if (savedContactInfo) {
         const info = JSON.parse(savedContactInfo);
@@ -113,6 +127,7 @@ export default function Contact() {
         setEditedContactInfo(info);
     }
 
+    // Load API Keys and Ads
     const savedApiKeys = localStorage.getItem('apiKeys');
     if(savedApiKeys) setApiKeys(JSON.parse(savedApiKeys));
 
@@ -123,11 +138,11 @@ export default function Contact() {
 
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value);
+    setLoginEmail(e.target.value);
   };
 
   const handleAdminLogin = () => {
-    if (email === ADMIN_EMAIL) {
+    if (loginEmail === adminEmail) {
       setIsAdmin(true);
       toast({ title: "Admin access granted." });
     } else {
@@ -137,7 +152,7 @@ export default function Contact() {
   
   const handleAdminLogout = () => {
     setIsAdmin(false);
-    setEmail('');
+    setLoginEmail('');
   };
 
   const handleSaveTheme = () => {
@@ -182,24 +197,47 @@ export default function Contact() {
   };
   
   const handleSaveApiAndAds = () => {
-    // In a real app, this would trigger an API call to send OTP
-    console.log("Requesting OTP for", ADMIN_EMAIL);
-    setShowOtpDialog(true);
+    console.log("Requesting OTP for", adminEmail);
+    setShowSaveApiOtpDialog(true);
     toast({ title: "OTP Sent", description: "An OTP has been sent to your admin email (mocked)." });
   };
 
-  const handleOtpVerification = () => {
-    // Mock verification: check if OTP is not empty and has 6 digits
-    if (otp && otp.length === 6) {
+  const handleSaveApiOtpVerification = () => {
+    if (saveApiOtp && saveApiOtp.length === 6) {
         localStorage.setItem('apiKeys', JSON.stringify(apiKeys));
         localStorage.setItem('adsConfig', JSON.stringify(adsConfig));
         toast({ title: "API & Ads Saved!", description: "Your settings have been updated successfully." });
-        setShowOtpDialog(false);
-        setOtp('');
+        setShowSaveApiOtpDialog(false);
+        setSaveApiOtp('');
     } else {
         toast({ variant: "destructive", title: "Invalid OTP", description: "Please enter a valid 6-digit OTP." });
     }
   };
+  
+  const handleChangeEmailSendOtps = () => {
+     if (!newAdminEmail || !/^\S+@\S+\.\S+$/.test(newAdminEmail)) {
+      toast({ variant: "destructive", title: "Invalid Email", description: "Please enter a valid new admin email." });
+      return;
+    }
+    setChangeEmailStep(2);
+    toast({ title: "OTPs Sent", description: `(Mock) OTPs sent to ${adminEmail} and ${newAdminEmail}.` });
+  }
+
+  const handleVerifyChangeEmailOtps = () => {
+    if (oldEmailOtp.length === 6 && newEmailOtp.length === 6) {
+        localStorage.setItem('adminEmail', newAdminEmail);
+        setAdminEmail(newAdminEmail);
+        toast({ title: "Admin Email Changed!", description: "You have been logged out. Please log in with your new email." });
+        setShowChangeEmailDialog(false);
+        setChangeEmailStep(1);
+        setNewAdminEmail('');
+        setOldEmailOtp('');
+        setNewEmailOtp('');
+        handleAdminLogout();
+    } else {
+        toast({ variant: "destructive", title: "Invalid OTPs", description: "Please enter valid 6-digit OTPs for both emails." });
+    }
+  }
 
 
   return (
@@ -264,7 +302,7 @@ export default function Contact() {
                         id="admin-email" 
                         type="email" 
                         placeholder="Enter admin email" 
-                        value={email}
+                        value={loginEmail}
                         onChange={handleEmailChange}
                       />
                     </div>
@@ -379,7 +417,7 @@ export default function Contact() {
                               </CollapsibleContent>
                             </Collapsible>
 
-                            <Button variant="outline" disabled className="w-full"><Mail className="mr-2" /> Change Admin Email</Button>
+                            <Button variant="outline" className="w-full" onClick={() => setShowChangeEmailDialog(true)}><Mail className="mr-2" /> Change Admin Email</Button>
                         </div>
                         <p className="text-sm text-muted-foreground">Note: More features are pending implementation.</p>
                     </div>
@@ -394,12 +432,12 @@ export default function Contact() {
         </div>
       </main>
 
-       <Dialog open={showOtpDialog} onOpenChange={setShowOtpDialog}>
+       <Dialog open={showSaveApiOtpDialog} onOpenChange={setShowSaveApiOtpDialog}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>OTP Verification</DialogTitle>
             <DialogDescription>
-              To protect your account, please enter the OTP sent to {ADMIN_EMAIL}. (This is a mock, enter any 6 digits).
+              To protect your account, please enter the OTP sent to {adminEmail}. (This is a mock, enter any 6 digits).
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
@@ -407,13 +445,76 @@ export default function Contact() {
               type="text" 
               placeholder="Enter 6-digit OTP"
               maxLength={6}
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
+              value={saveApiOtp}
+              onChange={(e) => setSaveApiOtp(e.target.value)}
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowOtpDialog(false)}>Cancel</Button>
-            <Button onClick={handleOtpVerification}><ShieldCheck className="mr-2"/>Verify & Save</Button>
+            <Button variant="outline" onClick={() => setShowSaveApiOtpDialog(false)}>Cancel</Button>
+            <Button onClick={handleSaveApiOtpVerification}><ShieldCheck className="mr-2"/>Verify & Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      <Dialog open={showChangeEmailDialog} onOpenChange={setShowChangeEmailDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change Admin Email</DialogTitle>
+            {changeEmailStep === 1 && (
+                <DialogDescription>
+                    Enter the new email address you want to use for admin access.
+                </DialogDescription>
+            )}
+             {changeEmailStep === 2 && (
+                <DialogDescription>
+                    To complete the change, please enter the OTPs sent to your old and new email addresses.
+                </DialogDescription>
+            )}
+          </DialogHeader>
+          {changeEmailStep === 1 && (
+             <div className="py-4 space-y-2">
+                <Label htmlFor="new-admin-email">New Admin Email</Label>
+                <Input 
+                  id="new-admin-email"
+                  type="email" 
+                  placeholder="new.admin@example.com"
+                  value={newAdminEmail}
+                  onChange={(e) => setNewAdminEmail(e.target.value)}
+                />
+              </div>
+          )}
+          {changeEmailStep === 2 && (
+             <div className="py-4 space-y-4">
+                <div className="space-y-2">
+                    <Label htmlFor="old-email-otp">OTP from {adminEmail}</Label>
+                    <Input 
+                      id="old-email-otp"
+                      type="text" 
+                      placeholder="Enter 6-digit OTP"
+                      maxLength={6}
+                      value={oldEmailOtp}
+                      onChange={(e) => setOldEmailOtp(e.target.value)}
+                    />
+                </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="new-email-otp">OTP from {newAdminEmail}</Label>                    
+                    <Input 
+                      id="new-email-otp"
+                      type="text" 
+                      placeholder="Enter 6-digit OTP"
+                      maxLength={6}
+                      value={newEmailOtp}
+                      onChange={(e) => setNewEmailOtp(e.target.value)}
+                    />
+                </div>
+              </div>
+          )}
+          <DialogFooter>
+            <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            {changeEmailStep === 1 && <Button onClick={handleChangeEmailSendOtps}>Send OTPs</Button>}
+            {changeEmailStep === 2 && <Button onClick={handleVerifyChangeEmailOtps}><ShieldCheck className="mr-2"/>Verify & Change</Button>}
           </DialogFooter>
         </DialogContent>
       </Dialog>
