@@ -8,12 +8,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Building, Mail, Globe, Lock, Palette, FileText, Settings, ChevronDown, KeyRound, MonitorPlay, Facebook, Settings2, BrainCircuit, Bot } from 'lucide-react';
+import { ArrowLeft, Building, Mail, Globe, Lock, Palette, FileText, Settings, ChevronDown, KeyRound, MonitorPlay, Facebook, Settings2, BrainCircuit, Bot, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 
 const ADMIN_EMAIL = "karannetam4@gmail.com";
 
@@ -93,6 +94,8 @@ export default function Contact() {
   const [apiKeys, setApiKeys] = useState({ google: '', facebook: '', gemini: '', openai: '' });
   const [adsConfig, setAdsConfig] = useState({ provider: 'none', code: '' });
 
+  const [showOtpDialog, setShowOtpDialog] = useState(false);
+  const [otp, setOtp] = useState('');
 
   useEffect(() => {
     const primaryHsl = getCssVariable('--primary');
@@ -179,10 +182,25 @@ export default function Contact() {
   };
   
   const handleSaveApiAndAds = () => {
-    localStorage.setItem('apiKeys', JSON.stringify(apiKeys));
-    localStorage.setItem('adsConfig', JSON.stringify(adsConfig));
-    toast({ title: "API & Ads Saved!", description: "Your settings have been updated." });
+    // In a real app, this would trigger an API call to send OTP
+    console.log("Requesting OTP for", ADMIN_EMAIL);
+    setShowOtpDialog(true);
+    toast({ title: "OTP Sent", description: "An OTP has been sent to your admin email (mocked)." });
   };
+
+  const handleOtpVerification = () => {
+    // Mock verification: check if OTP is not empty and has 6 digits
+    if (otp && otp.length === 6) {
+        localStorage.setItem('apiKeys', JSON.stringify(apiKeys));
+        localStorage.setItem('adsConfig', JSON.stringify(adsConfig));
+        toast({ title: "API & Ads Saved!", description: "Your settings have been updated successfully." });
+        setShowOtpDialog(false);
+        setOtp('');
+    } else {
+        toast({ variant: "destructive", title: "Invalid OTP", description: "Please enter a valid 6-digit OTP." });
+    }
+  };
+
 
   return (
     <div className="flex flex-col min-h-screen bg-muted/30">
@@ -375,6 +393,32 @@ export default function Contact() {
             </Card>
         </div>
       </main>
+
+       <Dialog open={showOtpDialog} onOpenChange={setShowOtpDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>OTP Verification</DialogTitle>
+            <DialogDescription>
+              To protect your account, please enter the OTP sent to {ADMIN_EMAIL}. (This is a mock, enter any 6 digits).
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Input 
+              type="text" 
+              placeholder="Enter 6-digit OTP"
+              maxLength={6}
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowOtpDialog(false)}>Cancel</Button>
+            <Button onClick={handleOtpVerification}><ShieldCheck className="mr-2"/>Verify & Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+
+    
