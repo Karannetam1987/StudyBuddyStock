@@ -23,6 +23,7 @@ import { CameraInput } from "@/components/app/camera-input";
 import { Separator } from "@/components/ui/separator";
 import { AppShare } from "@/components/app/app-share";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { NearMeSearch } from "./near-me-search";
 
 const subjects = [
   { name: "General Knowledge", icon: BrainCircuit },
@@ -180,11 +181,16 @@ export function StudyBuddy() {
     <div className="container mx-auto py-8 px-4">
        <Card className="bg-primary/5 border-primary/20 mb-8">
         <CardHeader>
-          <CardTitle className="flex items-center gap-3">
-             <GraduationCap className="h-8 w-8 text-primary"/>
-            Welcome to StudyBuddy!
+            <CardTitle className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                    <GraduationCap className="h-8 w-8 text-primary"/>
+                    Welcome to StudyBuddyStock!
+                </div>
+                <div className="hidden md:block">
+                  <NearMeSearch />
+                </div>
             </CardTitle>
-          <CardDescription>Your AI-powered academic assistant. Select a subject below, ask your question, and let our AI help you out!</CardDescription>
+            <CardDescription>Your AI-powered academic assistant. Select a subject below, ask your question, and let our AI help you out!</CardDescription>
         </CardHeader>
       </Card>
       
@@ -352,3 +358,5 @@ export function StudyBuddy() {
     </div>
   );
 }
+
+    

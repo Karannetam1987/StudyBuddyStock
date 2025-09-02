@@ -8,7 +8,6 @@ import { useToast } from "@/hooks/use-toast";
 import { FacebookIcon, InstagramIcon, TelegramIcon, WhatsappIcon, YouTubeIcon } from "@/components/app/social-icons";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
-import { NearMeSearch } from "@/components/app/near-me-search";
 
 export function AppShare() {
     const { toast } = useToast();
@@ -89,7 +88,6 @@ export function AppShare() {
                     <Button onClick={copyToClipboard} variant="outline" size="icon" className="h-12 w-12 rounded-lg hover:bg-muted-foreground hover:text-background transition-colors">
                         <Copy className="h-6 w-6" />
                     </Button>
-                    <NearMeSearch />
                  </div>
 
                  <div className="flex flex-wrap items-center justify-center gap-2">
@@ -117,3 +115,5 @@ export function AppShare() {
         </Card>
     );
 }
+
+    
