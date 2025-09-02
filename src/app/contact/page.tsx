@@ -15,6 +15,12 @@ import { useToast } from '@/hooks/use-toast';
 
 const ADMIN_EMAIL = "karannetam4@gmail.com";
 
+const DEFAULT_CONTACT_INFO = {
+    companyName: "Investo Future Consultancy",
+    email: "support@investofuture.in",
+    website: "https://www.investofuture.in"
+};
+
 // Helper to convert HEX to HSL string
 const hexToHsl = (hex: string): string => {
     hex = hex.replace('#', '');
@@ -72,12 +78,16 @@ const hslToHex = (hslStr: string): string => {
 export default function Contact() {
   const [email, setEmail] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
-  const [themeCustomizationOpen, setThemeCustomizationOpen] = useState(false);
+  const [adminPanelOpen, setAdminPanelOpen] = useState({theme: false, content: false});
   const { toast } = useToast();
 
   const [primaryColor, setPrimaryColor] = useState('#000000');
   const [backgroundColor, setBackgroundColor] = useState('#000000');
   const [accentColor, setAccentColor] = useState('#000000');
+
+  const [contactInfo, setContactInfo] = useState(DEFAULT_CONTACT_INFO);
+  const [editedContactInfo, setEditedContactInfo] = useState(DEFAULT_CONTACT_INFO);
+
 
   useEffect(() => {
     // Load initial colors from CSS variables once mounted
@@ -88,6 +98,15 @@ export default function Contact() {
     setPrimaryColor(hslToHex(primaryHsl));
     setBackgroundColor(hslToHex(backgroundHsl));
     setAccentColor(hslToHex(accentHsl));
+
+    // Load contact info from local storage
+    const savedContactInfo = localStorage.getItem('contactInfo');
+    if (savedContactInfo) {
+        const info = JSON.parse(savedContactInfo);
+        setContactInfo(info);
+        setEditedContactInfo(info);
+    }
+
   }, [isAdmin]);
 
 
@@ -130,6 +149,19 @@ export default function Contact() {
     }
   };
 
+  const handleContactInfoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEditedContactInfo({
+      ...editedContactInfo,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSaveContactInfo = () => {
+    localStorage.setItem('contactInfo', JSON.stringify(editedContactInfo));
+    setContactInfo(editedContactInfo);
+    toast({ title: "Contact Info Saved!", description: "The contact information has been updated." });
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-muted/30">
       <Header />
@@ -151,22 +183,22 @@ export default function Contact() {
                         <Building className="h-6 w-6 text-primary mt-1" />
                         <div>
                             <h3 className="font-semibold">Company Name</h3>
-                            <p className="text-muted-foreground">Investo Future Consultancy</p>
+                            <p className="text-muted-foreground">{contactInfo.companyName}</p>
                         </div>
                    </div>
                    <div className="flex items-start gap-4">
                         <Mail className="h-6 w-6 text-primary mt-1" />
                         <div>
                             <h3 className="font-semibold">Email</h3>
-                            <a href="mailto:support@investofuture.in" className="text-muted-foreground hover:text-primary transition-colors">support@investofuture.in</a>
+                            <a href={`mailto:${contactInfo.email}`} className="text-muted-foreground hover:text-primary transition-colors">{contactInfo.email}</a>
                         </div>
                    </div>
                    <div className="flex items-start gap-4">
                         <Globe className="h-6 w-6 text-primary mt-1" />
                         <div>
                             <h3 className="font-semibold">Website</h3>
-                            <a href="https://www.investofuture.in" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
-                                www.investofuture.in
+                            <a href={contactInfo.website} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+                                {contactInfo.website.replace('https://', '')}
                             </a>
                         </div>
                    </div>
@@ -205,11 +237,11 @@ export default function Contact() {
                     <div className="space-y-4 pt-4 border-t">
                        <h3 className="font-semibold text-lg">Dashboard</h3>
                         <div className="space-y-2">
-                           <Collapsible open={themeCustomizationOpen} onOpenChange={setThemeCustomizationOpen}>
+                           <Collapsible open={adminPanelOpen.theme} onOpenChange={(isOpen) => setAdminPanelOpen({...adminPanelOpen, theme: isOpen})}>
                               <CollapsibleTrigger asChild>
                                 <Button variant="outline" className="w-full justify-between">
                                   <span className="flex items-center"><Palette className="mr-2" /> Theme Customization</span>
-                                  <ChevronDown className={`transition-transform ${themeCustomizationOpen ? 'rotate-180' : ''}`} />
+                                  <ChevronDown className={`transition-transform ${adminPanelOpen.theme ? 'rotate-180' : ''}`} />
                                 </Button>
                               </CollapsibleTrigger>
                               <CollapsibleContent className="p-4 mt-2 border rounded-lg space-y-4">
@@ -229,7 +261,30 @@ export default function Contact() {
                                   <Button onClick={handleSaveTheme}>Save Theme</Button>
                               </CollapsibleContent>
                             </Collapsible>
-                            <Button variant="outline" disabled className="w-full"><FileText className="mr-2" /> Content Management</Button>
+                            <Collapsible open={adminPanelOpen.content} onOpenChange={(isOpen) => setAdminPanelOpen({...adminPanelOpen, content: isOpen})}>
+                              <CollapsibleTrigger asChild>
+                                <Button variant="outline" className="w-full justify-between">
+                                  <span className="flex items-center"><FileText className="mr-2" /> Content Management</span>
+                                  <ChevronDown className={`transition-transform ${adminPanelOpen.content ? 'rotate-180' : ''}`} />
+                                </Button>
+                              </CollapsibleTrigger>
+                              <CollapsibleContent className="p-4 mt-2 border rounded-lg space-y-4">
+                                  <p className="text-sm text-muted-foreground">Edit the content of the contact page.</p>
+                                  <div className="space-y-2">
+                                      <Label htmlFor="companyName">Company Name</Label>
+                                      <Input id="companyName" name="companyName" value={editedContactInfo.companyName} onChange={handleContactInfoChange} />
+                                  </div>
+                                   <div className="space-y-2">
+                                      <Label htmlFor="email">Email</Label>
+                                      <Input id="email" name="email" type="email" value={editedContactInfo.email} onChange={handleContactInfoChange} />
+                                  </div>
+                                   <div className="space-y-2">
+                                      <Label htmlFor="website">Website</Label>
+                                      <Input id="website" name="website" type="url" value={editedContactInfo.website} onChange={handleContactInfoChange} />
+                                  </div>
+                                  <Button onClick={handleSaveContactInfo}>Save Contact Info</Button>
+                              </CollapsibleContent>
+                            </Collapsible>
                             <Button variant="outline" disabled className="w-full"><Settings className="mr-2" /> API & Ads</Button>
                             <Button variant="outline" disabled className="w-full"><Mail className="mr-2" /> Change Admin Email</Button>
                         </div>
@@ -249,3 +304,4 @@ export default function Contact() {
   );
 }
 
+    
