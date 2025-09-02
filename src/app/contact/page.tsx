@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Header } from '@/components/app/header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -11,13 +11,85 @@ import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, Building, Mail, Globe, Lock, Palette, FileText, Settings, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { useToast } from '@/hooks/use-toast';
 
 const ADMIN_EMAIL = "karannetam4@gmail.com";
+
+// Helper to convert HEX to HSL string
+const hexToHsl = (hex: string): string => {
+    hex = hex.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16) / 255;
+    const g = parseInt(hex.substring(2, 4), 16) / 255;
+    const b = parseInt(hex.substring(4, 6), 16) / 255;
+
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    let h = 0, s = 0, l = (max + min) / 2;
+
+    if (max !== min) {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / d + 2; break;
+            case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+    }
+
+    return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+};
+
+// Helper to get root CSS variable
+const getCssVariable = (variable: string) => {
+  if (typeof window === 'undefined') return '';
+  return getComputedStyle(document.documentElement).getPropertyValue(variable).trim();
+}
+
+// Helper to convert HSL string to HEX
+const hslToHex = (hslStr: string): string => {
+    if (!hslStr) return "#000000";
+    const [h, s, l] = hslStr.match(/\d+/g)?.map(Number) || [0, 0, 0];
+    const sDecimal = s / 100;
+    const lDecimal = l / 100;
+    const c = (1 - Math.abs(2 * lDecimal - 1)) * sDecimal;
+    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+    const m = lDecimal - c / 2;
+    let r = 0, g = 0, b = 0;
+
+    if (h >= 0 && h < 60) { [r, g, b] = [c, x, 0]; }
+    else if (h >= 60 && h < 120) { [r, g, b] = [x, c, 0]; }
+    else if (h >= 120 && h < 180) { [r, g, b] = [0, c, x]; }
+    else if (h >= 180 && h < 240) { [r, g, b] = [0, x, c]; }
+    else if (h >= 240 && h < 300) { [r, g, b] = [x, 0, c]; }
+    else { [r, g, b] = [c, 0, x]; }
+
+    const toHex = (val: number) => Math.round((val + m) * 255).toString(16).padStart(2, '0');
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+};
+
 
 export default function Contact() {
   const [email, setEmail] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
   const [themeCustomizationOpen, setThemeCustomizationOpen] = useState(false);
+  const { toast } = useToast();
+
+  const [primaryColor, setPrimaryColor] = useState('#000000');
+  const [backgroundColor, setBackgroundColor] = useState('#000000');
+  const [accentColor, setAccentColor] = useState('#000000');
+
+  useEffect(() => {
+    // Load initial colors from CSS variables once mounted
+    const primaryHsl = getCssVariable('--primary');
+    const backgroundHsl = getCssVariable('--background');
+    const accentHsl = getCssVariable('--accent');
+    
+    setPrimaryColor(hslToHex(primaryHsl));
+    setBackgroundColor(hslToHex(backgroundHsl));
+    setAccentColor(hslToHex(accentHsl));
+  }, [isAdmin]);
+
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
@@ -26,14 +98,36 @@ export default function Contact() {
   const handleAdminLogin = () => {
     if (email === ADMIN_EMAIL) {
       setIsAdmin(true);
+      toast({ title: "Admin access granted." });
     } else {
-      alert('Invalid admin email.');
+      toast({ variant: "destructive", title: "Invalid admin email." });
     }
   };
   
   const handleAdminLogout = () => {
     setIsAdmin(false);
     setEmail('');
+  };
+
+  const handleSaveTheme = () => {
+    try {
+        const theme = {
+            primary: hexToHsl(primaryColor),
+            background: hexToHsl(backgroundColor),
+            accent: hexToHsl(accentColor),
+        };
+
+        localStorage.setItem('customTheme', JSON.stringify(theme));
+
+        document.documentElement.style.setProperty('--primary', theme.primary);
+        document.documentElement.style.setProperty('--background', theme.background);
+        document.documentElement.style.setProperty('--accent', theme.accent);
+
+        toast({ title: "Theme Saved!", description: "Your new theme has been applied." });
+    } catch (error) {
+        toast({ variant: "destructive", title: "Error saving theme", description: "Could not save the theme." });
+        console.error(error);
+    }
   };
 
   return (
@@ -119,20 +213,20 @@ export default function Contact() {
                                 </Button>
                               </CollapsibleTrigger>
                               <CollapsibleContent className="p-4 mt-2 border rounded-lg space-y-4">
-                                  <p className="text-sm text-muted-foreground">Change the look and feel of the application. Note: This feature is under development.</p>
+                                  <p className="text-sm text-muted-foreground">Change the look and feel of the application.</p>
                                   <div className="space-y-2">
                                       <Label htmlFor="primary-color">Primary Color</Label>
-                                      <Input id="primary-color" type="color" defaultValue="#6a11cb" disabled />
+                                      <Input id="primary-color" type="color" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} />
                                   </div>
                                    <div className="space-y-2">
                                       <Label htmlFor="background-color">Background Color</Label>
-                                      <Input id="background-color" type="color" defaultValue="#1a202c" disabled />
+                                      <Input id="background-color" type="color" value={backgroundColor} onChange={(e) => setBackgroundColor(e.target.value)} />
                                   </div>
                                    <div className="space-y-2">
                                       <Label htmlFor="accent-color">Accent Color</Label>
-                                      <Input id="accent-color" type="color" defaultValue="#6a11cb" disabled />
+                                      <Input id="accent-color" type="color" value={accentColor} onChange={(e) => setAccentColor(e.target.value)} />
                                   </div>
-                                  <Button disabled>Save Theme</Button>
+                                  <Button onClick={handleSaveTheme}>Save Theme</Button>
                               </CollapsibleContent>
                             </Collapsible>
                             <Button variant="outline" disabled className="w-full"><FileText className="mr-2" /> Content Management</Button>
@@ -154,3 +248,4 @@ export default function Contact() {
     </div>
   );
 }
+
