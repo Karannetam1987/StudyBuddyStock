@@ -11,7 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, Building, Mail, Globe, Lock, Palette, FileText, Settings } from 'lucide-react';
 import Link from 'next/link';
 
-const ADMIN_EMAIL = "karannetam4@mail.com";
+const ADMIN_EMAIL = "karannetam4@gmail.com";
 
 export default function Contact() {
   const [email, setEmail] = useState('');
