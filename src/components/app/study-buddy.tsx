@@ -24,9 +24,6 @@ import { Separator } from "@/components/ui/separator";
 import { AppShare } from "@/components/app/app-share";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { NearMeSearch } from "./near-me-search";
-import { analyzeImageAndAnswer } from "@/ai/flows/analyze-images-and-answer-questions";
-import { answerAcademicQuestion } from "@/ai/flows/answer-academic-questions";
-import { runFlow } from "genkit/next/client";
 
 const subjects = [
   { name: "General Knowledge", icon: BrainCircuit },
@@ -149,12 +146,29 @@ export function StudyBuddy() {
     setIsLoading(true);
     setAnswer(null);
     try {
-      let result;
+      let response;
+      let body;
+      let endpoint;
+
       if (imageDataUri) {
-        result = await runFlow(analyzeImageAndAnswer, { imageDataUri, question: values.question });
+        endpoint = '/api/analyze-image';
+        body = JSON.stringify({ imageDataUri, question: values.question });
       } else {
-        result = await runFlow(answerAcademicQuestion, values);
+        endpoint = '/api/answer-question';
+        body = JSON.stringify(values);
       }
+
+      response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: body,
+      });
+
+      if (!response.ok) {
+        throw new Error(`API request failed with status ${response.status}`);
+      }
+
+      const result = await response.json();
       setAnswer(result.answer);
     } catch (error) {
       console.error("Error getting answer:", error);
@@ -172,7 +186,7 @@ export function StudyBuddy() {
     <div className="container mx-auto py-8 px-4">
        <Card className="bg-primary/5 border-primary/20 mb-8">
         <CardHeader>
-            <CardTitle className="flex items-center justify-between gap-3">
+             <CardTitle className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                     <GraduationCap className="h-8 w-8 text-primary"/>
                     Welcome to StudyBuddyStock!
