@@ -198,31 +198,21 @@ export default function Contact() {
     });
   };
   
+  // Mock OTP sending
   const handleSaveApiAndAds = async () => {
     setIsSendingSaveApiOtp(true);
-    try {
-        const response = await fetch('/api/send-otp', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: adminEmail, type: 'saveApi' }),
-        });
-        const data = await response.json();
-        if (!response.ok) {
-            throw new Error(data.error || 'Failed to send OTP');
-        }
-        setShowSaveApiOtpDialog(true);
-        toast({ title: "OTP Sent", description: `An OTP has been sent to ${adminEmail}.` });
-    } catch (error: any) {
-        console.error(error);
-        toast({ variant: "destructive", title: "Error", description: error.message });
-    } finally {
-        setIsSendingSaveApiOtp(false);
-    }
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    // In a real app, you would call your backend here to send an OTP.
+    // For this prototype, we'll just show the dialog.
+    const mockOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    console.log(`PROTOTYPE: OTP for saving API/Ads is ${mockOtp}`);
+    setShowSaveApiOtpDialog(true);
+    toast({ title: "OTP Sent (Mock)", description: `For this prototype, an OTP has been logged to the console. Check the browser's developer console.` });
+    setIsSendingSaveApiOtp(false);
   };
 
   const handleSaveApiOtpVerification = () => {
-    // In a real app, you'd verify the OTP against the backend.
-    // For this prototype, we'll just check if it's a 6-digit number.
     if (saveApiOtp && saveApiOtp.length === 6) {
         localStorage.setItem('apiKeys', JSON.stringify(apiKeys));
         localStorage.setItem('adsConfig', JSON.stringify(adsConfig));
@@ -240,32 +230,19 @@ export default function Contact() {
       return;
     }
     setIsSendingChangeEmailOtps(true);
-    try {
-        const response = await fetch('/api/send-otp', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                email: adminEmail,
-                newEmail: newAdminEmail,
-                type: 'changeAdminEmail'
-            }),
-        });
-        const data = await response.json();
-        if (!response.ok) {
-            throw new Error(data.error || 'Failed to send OTPs');
-        }
-        setChangeEmailStep(2);
-        toast({ title: "OTPs Sent", description: `OTPs sent to ${adminEmail} and ${newAdminEmail}.` });
-    } catch (error: any) {
-         console.error(error);
-         toast({ variant: "destructive", title: "Error", description: error.message });
-    } finally {
-        setIsSendingChangeEmailOtps(false);
-    }
+     // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    // In a real app, you would call your backend here to send OTPs.
+    const mockOtpOld = Math.floor(100000 + Math.random() * 900000).toString();
+    const mockOtpNew = Math.floor(100000 + Math.random() * 900000).toString();
+    console.log(`PROTOTYPE: OTP for old email (${adminEmail}) is ${mockOtpOld}`);
+    console.log(`PROTOTYPE: OTP for new email (${newAdminEmail}) is ${mockOtpNew}`);
+    setChangeEmailStep(2);
+    toast({ title: "OTPs Sent (Mock)", description: `OTPs for both emails have been logged to the console.` });
+    setIsSendingChangeEmailOtps(false);
   }
 
   const handleVerifyChangeEmailOtps = () => {
-     // In a real app, you'd verify both OTPs against the backend.
     if (oldEmailOtp.length === 6 && newEmailOtp.length === 6) {
         localStorage.setItem('adminEmail', newAdminEmail);
         setAdminEmail(newAdminEmail);
@@ -482,7 +459,7 @@ export default function Contact() {
           <DialogHeader>
             <DialogTitle>OTP Verification</DialogTitle>
             <DialogDescription>
-              To protect your account, please enter the OTP sent to {adminEmail}.
+              To protect your account, please enter the OTP. In this prototype, any 6 digits will work.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
@@ -512,7 +489,7 @@ export default function Contact() {
             )}
              {changeEmailStep === 2 && (
                 <DialogDescription>
-                    To complete the change, please enter the OTPs sent to your old and new email addresses.
+                    To complete the change, please enter the mock OTPs. In this prototype, any 6 digits will work for each field.
                 </DialogDescription>
             )}
           </DialogHeader>
@@ -531,7 +508,7 @@ export default function Contact() {
           {changeEmailStep === 2 && (
              <div className="py-4 space-y-4">
                 <div className="space-y-2">
-                    <Label htmlFor="old-email-otp">OTP from {adminEmail}</Label>
+                    <Label htmlFor="old-email-otp">OTP for {adminEmail}</Label>
                     <Input 
                       id="old-email-otp"
                       type="text" 
@@ -542,7 +519,7 @@ export default function Contact() {
                     />
                 </div>
                  <div className="space-y-2">
-                    <Label htmlFor="new-email-otp">OTP from {newAdminEmail}</Label>                    
+                    <Label htmlFor="new-email-otp">OTP for {newAdminEmail}</Label>                    
                     <Input 
                       id="new-email-otp"
                       type="text" 

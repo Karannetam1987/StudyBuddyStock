@@ -24,6 +24,9 @@ import { Separator } from "@/components/ui/separator";
 import { AppShare } from "@/components/app/app-share";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { NearMeSearch } from "./near-me-search";
+import { analyzeImageAndAnswer } from "@/ai/flows/analyze-images-and-answer-questions";
+import { answerAcademicQuestion } from "@/ai/flows/answer-academic-questions";
+import { runFlow } from "genkit/next/client";
 
 const subjects = [
   { name: "General Knowledge", icon: BrainCircuit },
@@ -148,21 +151,9 @@ export function StudyBuddy() {
     try {
       let result;
       if (imageDataUri) {
-        const response = await fetch('/api/analyze-image', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ imageDataUri, question: values.question }),
-        });
-        if (!response.ok) throw new Error('Failed to analyze image');
-        result = await response.json();
+        result = await runFlow(analyzeImageAndAnswer, { imageDataUri, question: values.question });
       } else {
-        const response = await fetch('/api/answer-question', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(values),
-        });
-        if (!response.ok) throw new Error('Failed to get answer');
-        result = await response.json();
+        result = await runFlow(answerAcademicQuestion, values);
       }
       setAnswer(result.answer);
     } catch (error) {
@@ -170,7 +161,7 @@ export function StudyBuddy() {
       toast({
         variant: "destructive",
         title: "An error occurred",
-        description: "Failed to get an answer. Please try again.",
+        description: "Failed to get an answer. Please check if your API key is configured correctly and try again.",
       });
     } finally {
       setIsLoading(false);
@@ -358,5 +349,3 @@ export function StudyBuddy() {
     </div>
   );
 }
-
-    
