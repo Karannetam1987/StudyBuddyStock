@@ -186,7 +186,7 @@ export function StudyBuddy() {
                     <GraduationCap className="h-8 w-8 text-primary"/>
                     Welcome to StudyBuddyStock!
                 </div>
-                <div className="hidden md:block">
+                <div>
                   <NearMeSearch />
                 </div>
             </CardTitle>
