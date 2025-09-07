@@ -7,7 +7,7 @@ export const ai = genkit({
   plugins: [
     googleAI(),
     dotprompt(),
-    googleCloud(),
+    googleCloud,
   ],
   model: 'googleai/gemini-2.5-flash',
   enableTracing: true,

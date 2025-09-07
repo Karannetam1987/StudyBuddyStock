@@ -1,3 +1,5 @@
+
+'use server';
 /**
  * @fileOverview An image analysis AI agent that answers questions about images.
  *
@@ -51,3 +53,5 @@ const analyzeImageAndAnswerFlow = ai.defineFlow(
     return output!;
   }
 );
+
+    

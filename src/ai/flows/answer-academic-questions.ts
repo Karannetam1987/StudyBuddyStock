@@ -1,3 +1,5 @@
+
+'use server';
 /**
  * @fileOverview This file defines a Genkit flow for answering academic questions.
  *
@@ -49,3 +51,5 @@ const answerAcademicQuestionFlow = ai.defineFlow(
     return output!;
   }
 );
+
+    

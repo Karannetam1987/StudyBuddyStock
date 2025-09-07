@@ -24,6 +24,8 @@ import { Separator } from "@/components/ui/separator";
 import { AppShare } from "@/components/app/app-share";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { NearMeSearch } from "./near-me-search";
+import { answerAcademicQuestion } from "@/ai/flows/answer-academic-questions";
+import { analyzeImageAndAnswer } from "@/ai/flows/analyze-images-and-answer-questions";
 
 const subjects = [
   { name: "General Knowledge", icon: BrainCircuit },
@@ -146,29 +148,12 @@ export function StudyBuddy() {
     setIsLoading(true);
     setAnswer(null);
     try {
-      let response;
-      let body;
-      let endpoint;
-
+      let result;
       if (imageDataUri) {
-        endpoint = '/api/analyze-image';
-        body = JSON.stringify({ imageDataUri, question: values.question });
+        result = await analyzeImageAndAnswer({ imageDataUri, question: values.question });
       } else {
-        endpoint = '/api/answer-question';
-        body = JSON.stringify(values);
+        result = await answerAcademicQuestion(values);
       }
-
-      response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: body,
-      });
-
-      if (!response.ok) {
-        throw new Error(`API request failed with status ${response.status}`);
-      }
-
-      const result = await response.json();
       setAnswer(result.answer);
     } catch (error) {
       console.error("Error getting answer:", error);
@@ -363,3 +348,5 @@ export function StudyBuddy() {
     </div>
   );
 }
+
+    
