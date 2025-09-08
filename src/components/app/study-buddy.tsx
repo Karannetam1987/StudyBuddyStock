@@ -24,8 +24,6 @@ import { Separator } from "@/components/ui/separator";
 import { AppShare } from "@/components/app/app-share";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { NearMeSearch } from "./near-me-search";
-import { answerAcademicQuestion } from "@/ai/flows/answer-academic-questions";
-import { analyzeImageAndAnswer } from "@/ai/flows/analyze-images-and-answer-questions";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const subjects = [
@@ -57,8 +55,7 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-// This environment variable is set to 'true' by Next.js when using `output: 'export'`
-const isStaticExport = process.env.NEXT_PUBLIC_STATIC_EXPORT === 'true';
+const API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 
 export function StudyBuddy() {
   const [selectedSubject, setSelectedSubject] = useState('General Knowledge');
@@ -149,33 +146,62 @@ export function StudyBuddy() {
   }
 
   const onSubmit = async (values: FormValues) => {
-    if (isStaticExport) {
+    if (!API_KEY) {
         toast({
             variant: "destructive",
-            title: "AI Not Available",
-            description: "AI features require a server and are disabled in this static version.",
+            title: "API Key Missing",
+            description: "The Gemini API key is not configured. Please set the NEXT_PUBLIC_GEMINI_API_KEY environment variable.",
         });
         return;
     }
     setIsLoading(true);
     setAnswer(null);
+
+    let model = 'gemini-1.5-flash';
+    let prompt;
+    
+    if (imageDataUri) {
+        model = 'gemini-pro-vision'; // Vision model for image analysis
+        prompt = [
+            values.question,
+            { inline_data: { mime_type: "image/jpeg", data: imageDataUri.split(',')[1] } }
+        ];
+    } else {
+        prompt = `You are an expert in the field of ${values.subject}. Answer the following question to the best of your ability, in the language ${values.language}.\n\nQuestion: ${values.question}`;
+    }
+
     try {
-      let result;
-      if (imageDataUri) {
-        result = await analyzeImageAndAnswer({ imageDataUri, question: values.question });
-      } else {
-        result = await answerAcademicQuestion(values);
-      }
-      setAnswer(result.answer);
-    } catch (error) {
-      console.error("Error getting answer:", error);
-      toast({
-        variant: "destructive",
-        title: "An error occurred",
-        description: "Failed to get an answer. Please check if your API key is configured correctly and try again.",
-      });
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ contents: [{ parts: Array.isArray(prompt) ? prompt.map(p => typeof p === 'string' ? {text: p} : p) : [{text: prompt}] }] }),
+        });
+
+        if (!response.ok) {
+            const errorBody = await response.json();
+            throw new Error(errorBody.error?.message || `HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+        if (text) {
+            setAnswer(text);
+        } else {
+            throw new Error("No answer received from the API.");
+        }
+
+    } catch (error: any) {
+        console.error("Error getting answer:", error);
+        toast({
+            variant: "destructive",
+            title: "An error occurred",
+            description: error.message || "Failed to get an answer. Please check the browser console for details.",
+        });
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
   };
 
@@ -232,12 +258,12 @@ export function StudyBuddy() {
               <CardDescription>Ask a question, with or without an image. Your selected subject is <span className="font-bold text-primary">{selectedSubject}</span>.</CardDescription>
           </CardHeader>
           <CardContent>
-            {isStaticExport ? (
+            {!API_KEY ? (
                  <Alert variant="destructive">
                     <AlertTriangle className="h-4 w-4" />
-                    <AlertTitle>AI Features Disabled</AlertTitle>
+                    <AlertTitle>API Key Not Configured</AlertTitle>
                     <AlertDescription>
-                       AI is not available in this static export. Please deploy the dynamic version for AI-powered answers.
+                       The Gemini API key is missing. Please ensure the <code>NEXT_PUBLIC_GEMINI_API_KEY</code> is set in your environment variables.
                     </AlertDescription>
                 </Alert>
             ) : (
@@ -370,5 +396,3 @@ export function StudyBuddy() {
     </div>
   );
 }
-
-    
