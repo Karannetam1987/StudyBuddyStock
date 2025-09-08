@@ -27,6 +27,7 @@ const nextConfig: NextConfig = {
   },
   env: {
   },
+  output: 'standalone',
 };
 
 export default nextConfig;
