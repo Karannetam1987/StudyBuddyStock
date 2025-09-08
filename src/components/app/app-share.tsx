@@ -115,5 +115,3 @@ export function AppShare() {
         </Card>
     );
 }
-
-    
