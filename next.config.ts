@@ -1,7 +1,6 @@
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
-  output: 'export',
   /* config options here */
   typescript: {
     ignoreBuildErrors: true,
@@ -27,10 +26,7 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
   env: {
-    NEXT_PUBLIC_STATIC_EXPORT: 'true',
   },
 };
 
 export default nextConfig;
-
-    

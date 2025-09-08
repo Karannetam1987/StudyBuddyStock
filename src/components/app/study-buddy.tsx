@@ -4,7 +4,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { useSpeechToText } from "@/hooks/use-speech-to-text";
 import Image from "next/image";
@@ -25,6 +24,10 @@ import { AppShare } from "@/components/app/app-share";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { NearMeSearch } from "./near-me-search";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { answerAcademicQuestion } from "@/ai/flows/answer-academic-questions";
+import type { AnswerAcademicQuestionInput } from "@/ai/schemas/academic-question-schemas";
+import { AnswerAcademicQuestionInputSchema } from "@/ai/schemas/academic-question-schemas";
+
 
 const subjects = [
   { name: "General Knowledge", icon: BrainCircuit },
@@ -46,16 +49,9 @@ const subjects = [
 ];
 const languages = ['Hindi', 'English', 'Spanish', 'French', 'German', 'Mandarin', 'Japanese', 'Russian', 'Bengali', 'Marathi', 'Telugu', 'Tamil', 'Gujarati', 'Urdu', 'Kannada', 'Odia', 'Malayalam', 'Punjabi'];
 
-const formSchema = z.object({
-  subject: z.string().min(1, "Please select a subject."),
-  language: z.string().min(1, "Please select a language."),
-  question: z.string().min(1, "Please enter a question."),
-  image: z.any().optional(),
-});
+const formSchema = AnswerAcademicQuestionInputSchema;
 
-type FormValues = z.infer<typeof formSchema>;
-
-const API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+type FormValues = AnswerAcademicQuestionInput;
 
 export function StudyBuddy() {
   const [selectedSubject, setSelectedSubject] = useState('General Knowledge');
@@ -118,7 +114,7 @@ export function StudyBuddy() {
       toast({ variant: "destructive", title: "Image too large", description: "Please upload an image smaller than 4MB." });
       return;
     }
-    form.setValue("image", file);
+    form.setValue("image", file as any);
     const previewUrl = URL.createObjectURL(file);
     setImagePreview(previewUrl);
 
@@ -139,58 +135,28 @@ export function StudyBuddy() {
   const removeImage = () => {
     setImagePreview(null);
     setImageDataUri(null);
-    form.setValue("image", null);
+    form.setValue("image", undefined);
     if(fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   }
 
   const onSubmit = async (values: FormValues) => {
-    if (!API_KEY) {
-        toast({
-            variant: "destructive",
-            title: "API Key Missing",
-            description: "The Gemini API key is not configured. Please set the NEXT_PUBLIC_GEMINI_API_KEY environment variable.",
-        });
-        return;
-    }
     setIsLoading(true);
     setAnswer(null);
 
-    let model = 'gemini-1.5-flash';
-    let prompt;
-    
-    if (imageDataUri) {
-        model = 'gemini-pro-vision'; // Vision model for image analysis
-        prompt = [
-            values.question,
-            { inline_data: { mime_type: "image/jpeg", data: imageDataUri.split(',')[1] } }
-        ];
-    } else {
-        prompt = `You are an expert in the field of ${values.subject}. Answer the following question to the best of your ability, in the language ${values.language}.\n\nQuestion: ${values.question}`;
-    }
-
     try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ contents: [{ parts: Array.isArray(prompt) ? prompt.map(p => typeof p === 'string' ? {text: p} : p) : [{text: prompt}] }] }),
+        const result = await answerAcademicQuestion({
+          subject: values.subject,
+          language: values.language,
+          question: values.question,
+          image: imageDataUri || undefined,
         });
 
-        if (!response.ok) {
-            const errorBody = await response.json();
-            throw new Error(errorBody.error?.message || `HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-        if (text) {
-            setAnswer(text);
+        if (result.answer) {
+            setAnswer(result.answer);
         } else {
-            throw new Error("No answer received from the API.");
+            throw new Error("No answer received from the AI.");
         }
 
     } catch (error: any) {
@@ -198,7 +164,7 @@ export function StudyBuddy() {
         toast({
             variant: "destructive",
             title: "An error occurred",
-            description: error.message || "Failed to get an answer. Please check the browser console for details.",
+            description: error.message || "Failed to get an answer. Please check the server logs for details.",
         });
     } finally {
         setIsLoading(false);
@@ -258,15 +224,6 @@ export function StudyBuddy() {
               <CardDescription>Ask a question, with or without an image. Your selected subject is <span className="font-bold text-primary">{selectedSubject}</span>.</CardDescription>
           </CardHeader>
           <CardContent>
-            {!API_KEY ? (
-                 <Alert variant="destructive">
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertTitle>API Key Not Configured</AlertTitle>
-                    <AlertDescription>
-                       The Gemini API key is missing. Please ensure the <code>NEXT_PUBLIC_GEMINI_API_KEY</code> is set in your environment variables.
-                    </AlertDescription>
-                </Alert>
-            ) : (
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -374,7 +331,6 @@ export function StudyBuddy() {
                   </Button>
               </form>
             </Form>
-            )}
             {isLoading && (
               <div className="mt-6 space-y-4">
                   <Skeleton className="h-8 w-1/4" />
