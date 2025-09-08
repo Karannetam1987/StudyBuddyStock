@@ -16,7 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { AnswerCard } from "@/components/app/answer-card";
 import { VoiceInputButton } from "@/components/app/voice-input-button";
-import { Send, Loader2, UploadCloud, X, Camera, BrainCircuit, BookOpen, FlaskConical, PenSquare, Code, Calculator, Languages, GraduationCap, Briefcase, Cog, HeartPulse, Sprout, Landmark, Palette, Album } from "lucide-react";
+import { Send, Loader2, UploadCloud, X, Camera, BrainCircuit, BookOpen, FlaskConical, PenSquare, Code, Calculator, Languages, GraduationCap, Briefcase, Cog, HeartPulse, Sprout, Landmark, Palette, Album, AlertTriangle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CameraInput } from "@/components/app/camera-input";
@@ -26,6 +26,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { NearMeSearch } from "./near-me-search";
 import { answerAcademicQuestion } from "@/ai/flows/answer-academic-questions";
 import { analyzeImageAndAnswer } from "@/ai/flows/analyze-images-and-answer-questions";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const subjects = [
   { name: "General Knowledge", icon: BrainCircuit },
@@ -55,6 +56,9 @@ const formSchema = z.object({
 });
 
 type FormValues = z.infer<typeof formSchema>;
+
+// This environment variable is set to 'true' by Next.js when using `output: 'export'`
+const isStaticExport = process.env.NEXT_PUBLIC_STATIC_EXPORT === 'true';
 
 export function StudyBuddy() {
   const [selectedSubject, setSelectedSubject] = useState('General Knowledge');
@@ -145,6 +149,14 @@ export function StudyBuddy() {
   }
 
   const onSubmit = async (values: FormValues) => {
+    if (isStaticExport) {
+        toast({
+            variant: "destructive",
+            title: "AI Not Available",
+            description: "AI features require a server and are disabled in this static version.",
+        });
+        return;
+    }
     setIsLoading(true);
     setAnswer(null);
     try {
@@ -220,6 +232,15 @@ export function StudyBuddy() {
               <CardDescription>Ask a question, with or without an image. Your selected subject is <span className="font-bold text-primary">{selectedSubject}</span>.</CardDescription>
           </CardHeader>
           <CardContent>
+            {isStaticExport ? (
+                 <Alert variant="destructive">
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertTitle>AI Features Disabled</AlertTitle>
+                    <AlertDescription>
+                       AI is not available in this static export. Please deploy the dynamic version for AI-powered answers.
+                    </AlertDescription>
+                </Alert>
+            ) : (
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -327,6 +348,7 @@ export function StudyBuddy() {
                   </Button>
               </form>
             </Form>
+            )}
             {isLoading && (
               <div className="mt-6 space-y-4">
                   <Skeleton className="h-8 w-1/4" />
