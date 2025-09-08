@@ -352,5 +352,3 @@ export function StudyBuddy() {
     </div>
   );
 }
-
-    
