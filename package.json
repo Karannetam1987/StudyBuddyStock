@@ -7,7 +7,7 @@
     "genkit:dev": "genkit start -- tsx src/ai/dev.ts",
     "genkit:watch": "genkit start -- tsx --watch src/ai/dev.ts",
     "build": "next build",
-    "start": "node ./.next/standalone/server.js -p 80 -H 0.0.0.0",
+    "start": "node ./.next/standalone/server.js -p 8080 -H 0.0.0.0",
     "lint": "next lint",
     "typecheck": "tsc --noEmit"
   },
@@ -47,7 +47,7 @@
     "next": "15.3.3",
     "patch-package": "^8.0.0",
     "react": "^18.3.1",
-    "react-day-picker": "^8.10.1",
+"react-day-picker": "^8.10.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.54.2",
     "recharts": "^2.15.1",
