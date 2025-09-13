@@ -210,7 +210,7 @@ export function StudyBuddy() {
 
       {/* Custom Ad Container */}
       <Card className="mb-8 overflow-hidden shadow-lg border-2 border-primary/30">
-        <div className="relative w-full aspect-video">
+        <div className="relative w-full h-48">
             <Image 
               src={customAd.imageUrl}
               alt={customAd.title}
@@ -398,5 +398,7 @@ export function StudyBuddy() {
     </div>
   );
 }
+
+    
 
     
