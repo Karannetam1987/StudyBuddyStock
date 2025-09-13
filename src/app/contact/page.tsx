@@ -18,6 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 
 const DEFAULT_ADMIN_EMAIL = "karannetam4@gmail.com";
+const TEMP_DEFAULT_PIN = "1234";
 
 const DEFAULT_CONTACT_INFO = {
     companyName: "Investo Future Consultancy",
@@ -123,7 +124,7 @@ export default function Contact() {
 
   // PIN Management State
   const [showPinDialog, setShowPinDialog] = useState(false);
-  const [pinDialogStep, setPinDialogStep] = useState(1); // 1 for OTP, 2 for new PIN
+  const [oldPin, setOldPin] = useState('');
   const [newPin, setNewPin] = useState('');
   const [confirmNewPin, setConfirmNewPin] = useState('');
 
@@ -248,17 +249,12 @@ export default function Contact() {
       toast({ variant: "destructive", title: "Invalid admin email." });
       return;
     }
-    // If no pin is set, log in directly. Otherwise, ask for pin.
-    if (!adminPin) {
-      setIsAdmin(true);
-      toast({ title: "Admin access granted. Please set a PIN." });
-    } else {
-      setLoginStep(2);
-    }
+    setLoginStep(2);
   };
 
   const handleAdminPinSubmit = () => {
-    if (loginPinInput === adminPin) {
+    const currentPin = adminPin || TEMP_DEFAULT_PIN;
+    if (loginPinInput === currentPin) {
       setIsAdmin(true);
       toast({ title: "Admin access granted." });
       setLoginStep(1);
@@ -351,56 +347,38 @@ export default function Contact() {
   };
   
   const handleSaveApiAndAds = async () => {
-    const sentOtp = await sendOtp(adminEmail, "Verify to Save Settings");
-    if (sentOtp) {
-      setOtpSent(sentOtp);
-      setOtpAction(() => () => {
-        localStorage.setItem('apiKeys', JSON.stringify(apiKeys));
-        localStorage.setItem('adsConfig', JSON.stringify(adsConfig));
-        const adsToSave = customAds.filter(ad => ad.title && ad.imageUrl !== DEFAULT_AD_ITEM.imageUrl);
-        localStorage.setItem('customAds', JSON.stringify(adsToSave));
-        toast({ title: "API & Ads Saved!", description: "Your settings have been updated successfully." });
-      });
-      setShowOtpDialog(true);
-    }
-  };
-
-  const openPinDialog = async () => {
-    const sentOtp = await sendOtp(adminEmail, "Admin PIN Change Verification");
-    if (sentOtp) {
-      setOtpSent(sentOtp);
-      setShowPinDialog(true);
-      setPinDialogStep(1); // Start with OTP verification
-    }
-  };
-
-  const handlePinOtpVerification = () => {
-    if (otpInput === otpSent) {
-      toast({ title: "Verification Successful!", description: "You can now set your new PIN." });
-      setPinDialogStep(2);
-      setOtpInput('');
-      setOtpSent(null);
-    } else {
-      toast({ variant: "destructive", title: "Invalid OTP", description: "The OTP you entered is incorrect." });
-    }
+    localStorage.setItem('apiKeys', JSON.stringify(apiKeys));
+    localStorage.setItem('adsConfig', JSON.stringify(adsConfig));
+    const adsToSave = customAds.filter(ad => ad.title && ad.imageUrl !== DEFAULT_AD_ITEM.imageUrl);
+    localStorage.setItem('customAds', JSON.stringify(adsToSave));
+    toast({ title: "API & Ads Saved!", description: "Your settings have been updated successfully." });
   };
 
   const handleSetNewPin = () => {
+    // If a pin is already set, validate the old pin
+    if (adminPin && oldPin !== adminPin) {
+      toast({ variant: "destructive", title: "Incorrect Old PIN", description: "The old PIN you entered is incorrect." });
+      return;
+    }
+
     if (!/^\d{4}$/.test(newPin)) {
-      toast({ variant: "destructive", title: "Invalid PIN", description: "PIN must be 4 digits." });
+      toast({ variant: "destructive", title: "Invalid PIN", description: "New PIN must be 4 digits." });
       return;
     }
     if (newPin !== confirmNewPin) {
-      toast({ variant: "destructive", title: "PINs do not match", description: "Please re-enter your PIN." });
+      toast({ variant: "destructive", title: "PINs do not match", description: "The new PINs you entered do not match." });
       return;
     }
+    
     localStorage.setItem('adminPin', newPin);
     setAdminPin(newPin);
     toast({ title: "PIN Set Successfully!" });
+    
+    // Reset fields and close dialog
     setShowPinDialog(false);
+    setOldPin('');
     setNewPin('');
     setConfirmNewPin('');
-    setPinDialogStep(1);
   };
   
   const handleChangeEmailSendOtps = async () => {
@@ -553,7 +531,7 @@ export default function Contact() {
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <Button variant="secondary" onClick={openPinDialog}>Set Admin PIN Now</Button>
+                                <Button variant="secondary" onClick={() => setShowPinDialog(true)}>Set Admin PIN Now</Button>
                             </CardContent>
                         </Card>
                     )}
@@ -705,21 +683,20 @@ export default function Contact() {
                                             <Label htmlFor={`ad-link-${index}`}>Link URL</Label>
                                             <Input id={`ad-link-${index}`} name="link" value={ad.link} onChange={(e) => handleCustomAdChange(index, e)} placeholder="https://example.com/product" />
                                         </div>
-                                        <div className="spacey-y-2">
+                                        <div className="space-y-2">
                                             <Label htmlFor={`ad-imageHint-${index}`}>Image AI Hint</Label>
                                             <Input id={`ad-imageHint-${index}`} name="imageHint" value={ad.imageHint} onChange={(e) => handleCustomAdChange(index, e)} placeholder="e.g., marketing banner" />
                                         </div>
                                       </div>
                                     ))}
                                 </div>
-                                <Button onClick={handleSaveApiAndAds} disabled={isSendingOtp}>
-                                    {isSendingOtp && <Loader2 className="mr-2 animate-spin" />}
+                                <Button onClick={handleSaveApiAndAds}>
                                     Save All Settings
                                 </Button>
                               </CollapsibleContent>
                             </Collapsible>
 
-                            <Button variant="outline" className="w-full" onClick={openPinDialog}><KeyRound className="mr-2" /> {adminPin ? 'Change' : 'Set'} Admin PIN</Button>
+                            <Button variant="outline" className="w-full" onClick={() => setShowPinDialog(true)}><KeyRound className="mr-2" /> {adminPin ? 'Change' : 'Set'} Admin PIN</Button>
                             <Button variant="outline" className="w-full" onClick={() => setShowChangeEmailDialog(true)}><Mail className="mr-2" /> Change Admin Email</Button>
                         </div>
                         <p className="text-sm text-muted-foreground">Note: More features are pending implementation.</p>
@@ -766,67 +743,50 @@ export default function Contact() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{adminPin ? 'Change' : 'Set'} Admin PIN</DialogTitle>
-             {pinDialogStep === 1 && (
-                <DialogDescription>
-                  First, verify your identity. An OTP has been sent to {adminEmail}.
-                </DialogDescription>
-             )}
-             {pinDialogStep === 2 && (
-                <DialogDescription>
-                  Enter your new 4-digit PIN.
-                </DialogDescription>
-             )}
+            <DialogDescription>
+              {adminPin ? 'Change your 4-digit admin PIN.' : 'Create a new 4-digit PIN for your account.'}
+            </DialogDescription>
           </DialogHeader>
-            {pinDialogStep === 1 && (
-              <div className="py-4 space-y-2">
-                <Label htmlFor="pin-otp">Verification OTP</Label>
+          <div className="py-4 space-y-4">
+            {adminPin && (
+              <div className="space-y-2">
+                <Label htmlFor="old-pin">Old PIN</Label>
                 <Input 
-                  id="pin-otp"
-                  type="text" 
-                  placeholder="Enter 6-digit OTP"
-                  maxLength={6}
-                  value={otpInput}
-                  onChange={(e) => setOtpInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handlePinOtpVerification()}
+                  id="old-pin"
+                  type="password"
+                  maxLength={4}
+                  value={oldPin}
+                  onChange={(e) => setOldPin(e.target.value.replace(/\D/g, ''))}
                 />
               </div>
             )}
-            {pinDialogStep === 2 && (
-              <div className="py-4 space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="new-pin">New 4-Digit PIN</Label>
-                  <Input 
-                    id="new-pin"
-                    type="password"
-                    maxLength={4}
-                    value={newPin}
-                    onChange={(e) => setNewPin(e.target.value.replace(/\D/g, ''))}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="confirm-new-pin">Confirm New PIN</Label>
-                  <Input 
-                    id="confirm-new-pin"
-                    type="password"
-                    maxLength={4}
-                    value={confirmNewPin}
-                    onChange={(e) => setConfirmNewPin(e.target.value.replace(/\D/g, ''))}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSetNewPin()}
-                  />
-                </div>
-              </div>
-            )}
+            <div className="space-y-2">
+              <Label htmlFor="new-pin">New 4-Digit PIN</Label>
+              <Input 
+                id="new-pin"
+                type="password"
+                maxLength={4}
+                value={newPin}
+                onChange={(e) => setNewPin(e.target.value.replace(/\D/g, ''))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirm-new-pin">Confirm New PIN</Label>
+              <Input 
+                id="confirm-new-pin"
+                type="password"
+                maxLength={4}
+                value={confirmNewPin}
+                onChange={(e) => setConfirmNewPin(e.target.value.replace(/\D/g, ''))}
+                onKeyDown={(e) => e.key === 'Enter' && handleSetNewPin()}
+              />
+            </div>
+          </div>
           <DialogFooter>
             <DialogClose asChild>
                 <Button variant="outline">Cancel</Button>
             </DialogClose>
-             {pinDialogStep === 1 && (
-                <Button onClick={handlePinOtpVerification} disabled={isSendingOtp}>
-                  {isSendingOtp && <Loader2 className="mr-2 animate-spin" />}
-                  Verify OTP
-                </Button>
-             )}
-             {pinDialogStep === 2 && <Button onClick={handleSetNewPin}>Set New PIN</Button>}
+            <Button onClick={handleSetNewPin}>{adminPin ? 'Change' : 'Set'} PIN</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
