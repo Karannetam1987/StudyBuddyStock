@@ -15,7 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { AnswerCard } from "@/components/app/answer-card";
 import { VoiceInputButton } from "@/components/app/voice-input-button";
-import { Send, Loader2, UploadCloud, X, Camera, BrainCircuit, BookOpen, FlaskConical, PenSquare, Code, Calculator, Languages, GraduationCap, Briefcase, Cog, HeartPulse, Sprout, Landmark, Palette, Album, AlertTriangle } from "lucide-react";
+import { Send, Loader2, UploadCloud, X, Camera, BrainCircuit, BookOpen, FlaskConical, PenSquare, Code, Calculator, Languages, GraduationCap, Briefcase, Cog, HeartPulse, Sprout, Landmark, Palette, Album } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CameraInput } from "@/components/app/camera-input";
@@ -23,11 +23,8 @@ import { Separator } from "@/components/ui/separator";
 import { AppShare } from "@/components/app/app-share";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { NearMeSearch } from "./near-me-search";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { answerAcademicQuestion } from "@/ai/flows/answer-academic-questions";
 import type { AnswerAcademicQuestionInput } from "@/ai/schemas/academic-question-schemas";
 import { AnswerAcademicQuestionInputSchema } from "@/ai/schemas/academic-question-schemas";
-
 
 const subjects = [
   { name: "General Knowledge", icon: BrainCircuit },
@@ -146,19 +143,30 @@ export function StudyBuddy() {
     setAnswer(null);
 
     try {
-        const input: AnswerAcademicQuestionInput = {
+        const payload: AnswerAcademicQuestionInput = {
           subject: values.subject,
           language: values.language,
           question: values.question,
           image: imageDataUri || undefined,
         };
+
+        const response = await fetch('/api/studybuddy', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `Request failed with status ${response.status}`);
+        }
         
-        const result = await answerAcademicQuestion(input);
+        const result = await response.json();
 
         if (result && result.answer) {
             setAnswer(result.answer);
         } else {
-            throw new Error("No answer received from the AI. The API key might be invalid or the service could be down.");
+            throw new Error("No answer received from the AI.");
         }
 
     } catch (error: any) {
@@ -166,7 +174,7 @@ export function StudyBuddy() {
         toast({
             variant: "destructive",
             title: "An error occurred",
-            description: error.message || "Failed to get an answer. Please check the server logs for details.",
+            description: error.message || "Failed to get an answer. Please try again.",
         });
     } finally {
         setIsLoading(false);
@@ -354,5 +362,3 @@ export function StudyBuddy() {
     </div>
   );
 }
-
-    
