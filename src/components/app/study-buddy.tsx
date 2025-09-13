@@ -52,14 +52,33 @@ const formSchema = AnswerAcademicQuestionInputSchema;
 
 type FormValues = AnswerAcademicQuestionInput;
 
-const DEFAULT_CUSTOM_AD = {
-  imageUrl: "https://picsum.photos/seed/ad1/800/400",
-  title: "Your Custom Advertisement",
-  description: "Promote your product or service here with a catchy description. This space is fully customizable.",
-  buttonText: "Click Here",
-  link: "https://www.investofuture.in",
-  imageHint: "advertisement banner"
-};
+const DEFAULT_CUSTOM_ADS = [
+    {
+      imageUrl: "https://picsum.photos/seed/ad1/800/400",
+      title: "Advertisement One",
+      description: "This is a placeholder for your first custom ad. Promote your product here!",
+      buttonText: "Learn More",
+      link: "https://www.investofuture.in",
+      imageHint: "advertisement banner"
+    },
+    {
+      imageUrl: "https://picsum.photos/seed/ad2/800/400",
+      title: "Advertisement Two",
+      description: "This is another great spot for an ad. Reach your audience effectively.",
+      buttonText: "Get Started",
+      link: "https://www.investofuture.in",
+      imageHint: "marketing product"
+    },
+    {
+      imageUrl: "https://picsum.photos/seed/ad3/800/400",
+      title: "Advertisement Three",
+      description: "Use this space to showcase a special offer or new feature.",
+      buttonText: "View Offer",
+      link: "https://www.investofuture.in",
+      imageHint: "special offer"
+    }
+];
+
 
 export function StudyBuddy() {
   const [selectedSubject, setSelectedSubject] = useState('General Knowledge');
@@ -69,7 +88,7 @@ export function StudyBuddy() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageDataUri, setImageDataUri] = useState<string | null>(null);
   const [showAllSubjects, setShowAllSubjects] = useState(false);
-  const [customAds, setCustomAds] = useState([DEFAULT_CUSTOM_AD]);
+  const [customAds, setCustomAds] = useState(DEFAULT_CUSTOM_ADS);
   const isMobile = useIsMobile();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -86,16 +105,15 @@ export function StudyBuddy() {
     if (savedAds) {
       try {
         const parsedAds = JSON.parse(savedAds);
-        // Filter out any empty/invalid ads before setting state
         const validAds = parsedAds.filter((ad: any) => ad && ad.imageUrl && ad.title);
         if (validAds.length > 0) {
           setCustomAds(validAds);
         } else {
-          setCustomAds([DEFAULT_CUSTOM_AD]);
+          setCustomAds(DEFAULT_CUSTOM_ADS);
         }
       } catch (error) {
         console.error("Failed to parse custom ads from localStorage", error);
-        setCustomAds([DEFAULT_CUSTOM_AD]);
+        setCustomAds(DEFAULT_CUSTOM_ADS);
       }
     }
   }, []);
@@ -236,6 +254,9 @@ export function StudyBuddy() {
             stopOnInteraction: true,
           }),
         ]}
+        opts={{
+          loop: true,
+        }}
       >
         <CarouselContent>
           {customAds.map((ad, index) => (
