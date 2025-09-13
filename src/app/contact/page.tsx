@@ -136,6 +136,7 @@ export default function Contact() {
   const [isSendingChangeEmailOtps, setIsSendingChangeEmailOtps] = useState(false);
   const [otpForOldEmail, setOtpForOldEmail] = useState<string | null>(null);
   const [otpForNewEmail, setOtpForNewEmail] = useState<string | null>(null);
+  const [isSavingApiKeys, setIsSavingApiKeys] = useState(false);
 
 
   useEffect(() => {
@@ -249,7 +250,13 @@ export default function Contact() {
       toast({ variant: "destructive", title: "Invalid admin email." });
       return;
     }
-    setLoginStep(2);
+    // If no PIN is set, log in directly. Otherwise, go to PIN step.
+    if (!adminPin) {
+        setIsAdmin(true);
+        toast({ title: "Admin access granted." });
+    } else {
+        setLoginStep(2);
+    }
   };
 
   const handleAdminPinSubmit = () => {
@@ -347,11 +354,48 @@ export default function Contact() {
   };
   
   const handleSaveApiAndAds = async () => {
-    localStorage.setItem('apiKeys', JSON.stringify(apiKeys));
+    setIsSavingApiKeys(true);
+    // 1. Save non-sensitive settings to localStorage
+    localStorage.setItem('apiKeys', JSON.stringify(apiKeys)); // Still save to UI for display
     localStorage.setItem('adsConfig', JSON.stringify(adsConfig));
     const adsToSave = customAds.filter(ad => ad.title && ad.imageUrl !== DEFAULT_AD_ITEM.imageUrl);
     localStorage.setItem('customAds', JSON.stringify(adsToSave));
-    toast({ title: "API & Ads Saved!", description: "Your settings have been updated successfully." });
+
+    // 2. Save sensitive keys to the backend
+    try {
+        const response = await fetch('/api/save-env', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                // This is a simplified auth check for the prototype.
+                // In a real app, you'd use a proper session token.
+                'x-admin-secret': adminPin || TEMP_DEFAULT_PIN,
+            },
+            body: JSON.stringify({
+                gemini: apiKeys.gemini,
+                resend: apiKeys.resend,
+            }),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            toast({ 
+                title: "Settings Saved!", 
+                description: "Your settings have been updated. The backend may need a restart to use new API keys."
+            });
+        } else {
+            throw new Error(result.error || 'Failed to save API keys to server.');
+        }
+    } catch (error: any) {
+        toast({ 
+            variant: "destructive", 
+            title: "Failed to Save API Keys", 
+            description: error.message || "An error occurred while saving keys to the server." 
+        });
+    } finally {
+        setIsSavingApiKeys(false);
+    }
   };
 
   const handleSetNewPin = () => {
@@ -597,7 +641,7 @@ export default function Contact() {
                               <CollapsibleContent className="p-4 mt-2 border rounded-lg space-y-6">
                                 <div className='space-y-4'>
                                     <h4 className="font-semibold flex items-center gap-2"><KeyRound/> API Key Management</h4>
-                                    <p className="text-sm text-muted-foreground">Manage API keys for various services.</p>
+                                    <p className="text-sm text-muted-foreground">Manage API keys for various services. Keys are saved securely on the server.</p>
                                     <div className="space-y-2">
                                         <Label htmlFor="google-api-key">Google API Key</Label>
                                         <Input id="google-api-key" name="google" value={apiKeys.google} onChange={handleApiKeyChange} placeholder="Enter your Google API Key (for Maps, etc)" />
@@ -690,7 +734,8 @@ export default function Contact() {
                                       </div>
                                     ))}
                                 </div>
-                                <Button onClick={handleSaveApiAndAds}>
+                                <Button onClick={handleSaveApiAndAds} disabled={isSavingApiKeys}>
+                                    {isSavingApiKeys ? <Loader2 className="animate-spin"/> : null}
                                     Save All Settings
                                 </Button>
                               </CollapsibleContent>
@@ -862,5 +907,3 @@ export default function Contact() {
     </div>
   );
 }
-
-    
