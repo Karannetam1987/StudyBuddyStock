@@ -145,13 +145,8 @@ export function StudyBuddy() {
     setIsLoading(true);
     setAnswer(null);
 
-    // If there's no API key, show a mock answer for testing
-    if (!process.env.GEMINI_API_KEY) {
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        setAnswer("This is a test answer. The AI is currently disabled because the API key is not configured correctly on the server. Please check the server logs and environment variables.");
-        setIsLoading(false);
-        return;
-    }
+    // This is the incorrect check that was causing the issue. It has been removed.
+    // if (!process.env.NEXT_PUBLIC_GEMINI_API_KEY) { ... }
 
     try {
         const result = await answerAcademicQuestion({
@@ -164,6 +159,10 @@ export function StudyBuddy() {
         if (result.answer) {
             setAnswer(result.answer);
         } else {
+            // Check if the API key is missing on the server and provide a helpful error
+            if (!process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
+               throw new Error("The Gemini API key is not configured on the server. Please check your environment variables.");
+            }
             throw new Error("No answer received from the AI.");
         }
 
