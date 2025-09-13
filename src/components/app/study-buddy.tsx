@@ -146,12 +146,14 @@ export function StudyBuddy() {
     setAnswer(null);
 
     try {
-        const result = await answerAcademicQuestion({
+        const input: AnswerAcademicQuestionInput = {
           subject: values.subject,
           language: values.language,
           question: values.question,
           image: imageDataUri || undefined,
-        });
+        };
+        
+        const result = await answerAcademicQuestion(input);
 
         if (result && result.answer) {
             setAnswer(result.answer);
