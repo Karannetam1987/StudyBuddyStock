@@ -179,22 +179,31 @@ export default function Contact() {
         body: JSON.stringify({ to: email, subject, otp: generatedOtp }),
       });
 
-      if (!response.ok) {
-        // If the API call fails (e.g., API key not set), it will throw.
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to send OTP email.');
-      }
-      
-      // If the API call is successful, show a success toast.
-      toast({ title: "OTP Sent", description: `An OTP has been sent to ${email}.` });
-      setIsSendingOtp(false);
-      return generatedOtp;
+      if (response.ok) {
+        toast({ title: "OTP Sent", description: `An OTP has been sent to ${email}.` });
+        setIsSendingOtp(false);
+        return generatedOtp;
+      } else {
+        // Handle API failure gracefully without crashing
+        console.error("Failed to send OTP email. Status:", response.status);
+        const errorData = await response.json().catch(() => ({ error: "An unknown error occurred." }));
+        console.error("Error details:", errorData);
 
+        // Fallback for when email sending fails (e.g., API key not set on server)
+        console.log(`PROTOTYPE ONLY - OTP for ${email}: ${generatedOtp}`);
+        toast({ 
+          variant: "destructive", 
+          title: "Email Sending Failed", 
+          description: "Could not send email. The OTP has been logged to the browser console for you to use." 
+        });
+        setIsSendingOtp(false);
+        return generatedOtp; // Return the OTP so the user can still log in via console.
+      }
     } catch (error: any) {
-      // This catch block handles the fetch failure.
-      console.error("sendOtp error:", error);
-      // Fallback for when email sending fails (e.g., API key not set on server)
-      // Log to console for development/prototype purposes.
+      // This catch block handles network errors or other exceptions during the fetch
+      console.error("sendOtp fetch error:", error);
+      
+      // Fallback for when email sending fails
       console.log(`PROTOTYPE ONLY - OTP for ${email}: ${generatedOtp}`);
       toast({ 
         variant: "destructive", 
@@ -205,6 +214,7 @@ export default function Contact() {
       return generatedOtp; // Return the OTP so the user can still log in via console.
     }
   };
+
 
   const handleOtpVerification = () => {
     if (otpInput === otpSent) {
