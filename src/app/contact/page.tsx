@@ -165,7 +165,7 @@ export default function Contact() {
       setCustomAds(fullAdsArray);
     }
 
-  }, [isAdmin]);
+  }, []);
 
   // --- OTP Logic ---
   const sendOtp = async (email: string, subject: string): Promise<string | null> => {
@@ -181,6 +181,7 @@ export default function Contact() {
 
       if (!response.ok) {
         const errorData = await response.json();
+        // This throw will be caught by the catch block below
         throw new Error(errorData.error || 'Failed to send OTP email.');
       }
       
@@ -190,11 +191,15 @@ export default function Contact() {
 
     } catch (error: any) {
       console.error("sendOtp error:", error);
-      toast({ variant: "destructive", title: "Failed to Send OTP", description: error.message });
-      setIsSendingOtp(false);
-      // For prototype, log to console if API fails
+      // Fallback for when email sending fails (e.g., API key not set)
+      // Log to console for development/prototype purposes
       console.log(`PROTOTYPE ONLY - OTP for ${email}: ${generatedOtp}`);
-      toast({ title: "OTP Sending Failed (Using Fallback)", description: "The OTP has been logged to the console for this prototype." });
+      toast({ 
+        variant: "destructive", 
+        title: "Email Sending Failed", 
+        description: "The OTP has been logged to the browser console for you to use." 
+      });
+      setIsSendingOtp(false);
       return generatedOtp; 
     }
   };
@@ -236,7 +241,7 @@ export default function Contact() {
         toast({ title: "Admin access granted." });
       });
       setOtpDialogTitle("Admin Login Verification");
-      setOtpDialogDescription(`To protect the admin panel, please enter the OTP sent to ${loginEmail}.`);
+      setOtpDialogDescription(`An OTP has been sent to ${loginEmail}. Check your email (or the browser console if email sending fails).`);
       setShowOtpDialog(true);
     }
   };
@@ -721,3 +726,5 @@ export default function Contact() {
     </div>
   );
 }
+
+    
