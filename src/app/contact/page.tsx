@@ -184,26 +184,19 @@ export default function Contact() {
         setIsSendingOtp(false);
         return generatedOtp;
       } else {
-        // Handle API failure gracefully without crashing
-        console.error("Failed to send OTP email. Status:", response.status);
+        // Handle API failure gracefully without crashing the app
         const errorData = await response.json().catch(() => ({ error: "An unknown error occurred." }));
-        console.error("Error details:", errorData);
-
-        // Fallback for when email sending fails (e.g., API key not set on server)
         console.log(`PROTOTYPE ONLY - OTP for ${email}: ${generatedOtp}`);
         toast({ 
           variant: "destructive", 
           title: "Email Sending Failed", 
-          description: "Could not send email. The OTP has been logged to the browser console for you to use." 
+          description: `Could not send email. The OTP for development is in the browser console. Reason: ${errorData.error || 'Unknown'}`
         });
         setIsSendingOtp(false);
         return generatedOtp; // Return the OTP so the user can still log in via console.
       }
-    } catch (error: any) {
+    } catch (error) {
       // This catch block handles network errors or other exceptions during the fetch
-      console.error("sendOtp fetch error:", error);
-      
-      // Fallback for when email sending fails
       console.log(`PROTOTYPE ONLY - OTP for ${email}: ${generatedOtp}`);
       toast({ 
         variant: "destructive", 
