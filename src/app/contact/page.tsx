@@ -248,7 +248,13 @@ export default function Contact() {
       toast({ variant: "destructive", title: "Invalid admin email." });
       return;
     }
-    setLoginStep(2);
+    // If no pin is set, log in directly. Otherwise, ask for pin.
+    if (!adminPin) {
+      setIsAdmin(true);
+      toast({ title: "Admin access granted. Please set a PIN." });
+    } else {
+      setLoginStep(2);
+    }
   };
 
   const handleAdminPinSubmit = () => {
@@ -380,7 +386,7 @@ export default function Contact() {
   };
 
   const handleSetNewPin = () => {
-    if (newPin.length !== 4) {
+    if (!/^\d{4}$/.test(newPin)) {
       toast({ variant: "destructive", title: "Invalid PIN", description: "PIN must be 4 digits." });
       return;
     }
@@ -522,15 +528,14 @@ export default function Contact() {
                               maxLength={4}
                               placeholder="Enter 4-digit PIN"
                               value={loginPinInput}
-                              onChange={(e) => setLoginPinInput(e.target.value)}
+                              onChange={(e) => setLoginPinInput(e.target.value.replace(/\D/g, ''))}
                               onKeyDown={(e) => e.key === 'Enter' && handleAdminPinSubmit()}
                            />
                          </div>
-                         <Button onClick={handleAdminPinSubmit} disabled={!adminPin}>
+                         <Button onClick={handleAdminPinSubmit}>
                            Login
                          </Button>
                       </div>
-                      {!adminPin && <p className="text-sm text-yellow-500">No admin PIN is set. Please contact support or set one up if you are the primary admin.</p>}
                       <Button variant="link" onClick={() => setLoginStep(1)}>Back to email</Button>
                     </div>
                    )}
@@ -795,7 +800,7 @@ export default function Contact() {
                     type="password"
                     maxLength={4}
                     value={newPin}
-                    onChange={(e) => setNewPin(e.target.value)}
+                    onChange={(e) => setNewPin(e.target.value.replace(/\D/g, ''))}
                   />
                 </div>
                 <div className="space-y-2">
@@ -805,7 +810,7 @@ export default function Contact() {
                     type="password"
                     maxLength={4}
                     value={confirmNewPin}
-                    onChange={(e) => setConfirmNewPin(e.target.value)}
+                    onChange={(e) => setConfirmNewPin(e.target.value.replace(/\D/g, ''))}
                     onKeyDown={(e) => e.key === 'Enter' && handleSetNewPin()}
                   />
                 </div>
