@@ -1,14 +1,16 @@
+
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Header } from '@/components/app/header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Building, Mail, Globe, Lock, Palette, FileText, Settings, ChevronDown, KeyRound, MonitorPlay, Facebook, Settings2, BrainCircuit, Bot, ShieldCheck, Loader2, Megaphone } from 'lucide-react';
+import { ArrowLeft, Building, Mail, Globe, Lock, Palette, FileText, Settings, ChevronDown, KeyRound, MonitorPlay, Facebook, Settings2, BrainCircuit, Bot, ShieldCheck, Loader2, Megaphone, UploadCloud, X } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
@@ -93,6 +95,7 @@ export default function Contact() {
   const [adminEmail, setAdminEmail] = useState(DEFAULT_ADMIN_EMAIL);
   const [adminPanelOpen, setAdminPanelOpen] = useState({theme: false, content: false, api: false});
   const { toast } = useToast();
+  const adImageInputRef = useRef<HTMLInputElement>(null);
 
   const [primaryColor, setPrimaryColor] = useState('#000000');
   const [backgroundColor, setBackgroundColor] = useState('#000000');
@@ -207,6 +210,28 @@ export default function Contact() {
   
   const handleCustomAdChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setCustomAd({ ...customAd, [e.target.name]: e.target.value });
+  };
+  
+  const handleAdImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.size > 4 * 1024 * 1024) { // 4MB limit
+        toast({ variant: "destructive", title: "Image too large", description: "Please upload an image smaller than 4MB." });
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setCustomAd({ ...customAd, imageUrl: e.target?.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeAdImage = () => {
+    setCustomAd({ ...customAd, imageUrl: DEFAULT_CUSTOM_AD.imageUrl });
+    if(adImageInputRef.current) {
+        adImageInputRef.current.value = "";
+    }
   };
 
 
@@ -456,10 +481,25 @@ export default function Contact() {
                                 <div className='space-y-4'>
                                     <h4 className="font-semibold flex items-center gap-2"><Megaphone /> Custom Ad Management</h4>
                                     <p className="text-sm text-muted-foreground">Manage the custom ad banner on the homepage.</p>
+                                    
                                     <div className="space-y-2">
-                                        <Label htmlFor="ad-imageUrl">Image URL</Label>
-                                        <Input id="ad-imageUrl" name="imageUrl" value={customAd.imageUrl} onChange={handleCustomAdChange} placeholder="https://example.com/image.png" />
+                                      <Label>Ad Image</Label>
+                                      <div className="relative">
+                                        <Image src={customAd.imageUrl} width={600} height={300} alt="Ad image preview" className="rounded-lg w-full object-contain max-h-48 border" />
+                                        <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-8 w-8" onClick={removeAdImage}>
+                                            <X className="h-4 w-4" />
+                                        </Button>
+                                      </div>
+                                      <label htmlFor="ad-image-upload" className="mt-2 flex flex-col items-center justify-center w-full border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-muted transition-colors p-4 text-center">
+                                          <div className="flex flex-col items-center justify-center">
+                                              <UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" />
+                                              <p className="text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                                              <p className="text-xs text-muted-foreground">PNG, JPG, or WEBP (MAX. 4MB)</p>
+                                          </div>
+                                          <Input id="ad-image-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={handleAdImageChange} ref={adImageInputRef} />
+                                      </label>
                                     </div>
+
                                      <div className="space-y-2">
                                         <Label htmlFor="ad-title">Title</Label>
                                         <Input id="ad-title" name="title" value={customAd.title} onChange={handleCustomAdChange} placeholder="Ad Title" />
@@ -476,7 +516,7 @@ export default function Contact() {
                                         <Label htmlFor="ad-link">Link URL</Label>
                                         <Input id="ad-link" name="link" value={customAd.link} onChange={handleCustomAdChange} placeholder="https://example.com/product" />
                                     </div>
-                                    <div className="space-y-2">
+                                    <div className="spacey-y-2">
                                         <Label htmlFor="ad-imageHint">Image AI Hint</Label>
                                         <Input id="ad-imageHint" name="imageHint" value={customAd.imageHint} onChange={handleCustomAdChange} placeholder="e.g., marketing banner" />
                                     </div>
@@ -597,3 +637,6 @@ export default function Contact() {
     </div>
   );
 }
+
+
+    

@@ -86,6 +86,8 @@ export function StudyBuddy() {
         setCustomAd(JSON.parse(savedAd));
       } catch (error) {
         console.error("Failed to parse custom ad from localStorage", error);
+        // If parsing fails, fall back to default
+        setCustomAd(DEFAULT_CUSTOM_AD);
       }
     }
   }, []);
@@ -407,6 +409,8 @@ export function StudyBuddy() {
     </div>
   );
 }
+
+    
 
     
 
