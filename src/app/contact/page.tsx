@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -8,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Building, Mail, Globe, Lock, Palette, FileText, Settings, ChevronDown, KeyRound, MonitorPlay, Facebook, Settings2, BrainCircuit, Bot, ShieldCheck, Loader2, AdCircle } from 'lucide-react';
+import { ArrowLeft, Building, Mail, Globe, Lock, Palette, FileText, Settings, ChevronDown, KeyRound, MonitorPlay, Facebook, Settings2, BrainCircuit, Bot, ShieldCheck, Loader2, Megaphone } from 'lucide-react';
 import Link from 'next/link';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useToast } from '@/hooks/use-toast';
@@ -455,7 +454,7 @@ export default function Contact() {
                                 </div>
                                 <Separator/>
                                 <div className='space-y-4'>
-                                    <h4 className="font-semibold flex items-center gap-2"><AdCircle /> Custom Ad Management</h4>
+                                    <h4 className="font-semibold flex items-center gap-2"><Megaphone /> Custom Ad Management</h4>
                                     <p className="text-sm text-muted-foreground">Manage the custom ad banner on the homepage.</p>
                                     <div className="space-y-2">
                                         <Label htmlFor="ad-imageUrl">Image URL</Label>
@@ -598,5 +597,3 @@ export default function Contact() {
     </div>
   );
 }
-
-    
