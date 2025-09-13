@@ -25,6 +25,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { NearMeSearch } from "./near-me-search";
 import type { AnswerAcademicQuestionInput } from "@/ai/schemas/academic-question-schemas";
 import { AnswerAcademicQuestionInputSchema } from "@/ai/schemas/academic-question-schemas";
+import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 
 const subjects = [
   { name: "General Knowledge", icon: BrainCircuit },
@@ -67,7 +69,7 @@ export function StudyBuddy() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageDataUri, setImageDataUri] = useState<string | null>(null);
   const [showAllSubjects, setShowAllSubjects] = useState(false);
-  const [customAd, setCustomAd] = useState(DEFAULT_CUSTOM_AD);
+  const [customAds, setCustomAds] = useState([DEFAULT_CUSTOM_AD]);
   const isMobile = useIsMobile();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -80,14 +82,20 @@ export function StudyBuddy() {
       setSelectedLanguage(storedLanguage);
     }
     
-    const savedAd = localStorage.getItem('customAd');
-    if (savedAd) {
+    const savedAds = localStorage.getItem('customAds');
+    if (savedAds) {
       try {
-        setCustomAd(JSON.parse(savedAd));
+        const parsedAds = JSON.parse(savedAds);
+        // Filter out any empty/invalid ads before setting state
+        const validAds = parsedAds.filter((ad: any) => ad && ad.imageUrl && ad.title);
+        if (validAds.length > 0) {
+          setCustomAds(validAds);
+        } else {
+          setCustomAds([DEFAULT_CUSTOM_AD]);
+        }
       } catch (error) {
-        console.error("Failed to parse custom ad from localStorage", error);
-        // If parsing fails, fall back to default
-        setCustomAd(DEFAULT_CUSTOM_AD);
+        console.error("Failed to parse custom ads from localStorage", error);
+        setCustomAds([DEFAULT_CUSTOM_AD]);
       }
     }
   }, []);
@@ -219,31 +227,47 @@ export function StudyBuddy() {
         </CardHeader>
       </Card>
 
-      {/* Custom Ad Container */}
-      <Card className="mb-8 overflow-hidden shadow-lg border-2 border-primary/30">
-        <div className="relative w-full h-48">
-            <Image 
-              src={customAd.imageUrl}
-              alt={customAd.title}
-              fill
-              className="object-cover"
-              data-ai-hint={customAd.imageHint}
-            />
-        </div>
-        <div className="p-4 bg-card">
-            <h3 className="text-lg font-bold text-card-foreground">{customAd.title}</h3>
-            <p className="text-sm text-muted-foreground mt-1">{customAd.description}</p>
-            <Button 
-                asChild 
-                className="mt-4 w-full md:w-auto"
-            >
-                <a href={customAd.link} target="_blank" rel="noopener noreferrer">
-                    {customAd.buttonText}
-                    <ExternalLink className="ml-2 h-4 w-4" />
-                </a>
-            </Button>
-        </div>
-      </Card>
+      {/* Custom Ad Carousel */}
+      <Carousel
+        className="mb-8 w-full"
+        plugins={[
+          Autoplay({
+            delay: 5000,
+            stopOnInteraction: true,
+          }),
+        ]}
+      >
+        <CarouselContent>
+          {customAds.map((ad, index) => (
+            <CarouselItem key={index}>
+              <Card className="overflow-hidden shadow-lg border-2 border-primary/30">
+                <div className="relative w-full h-48">
+                    <Image 
+                      src={ad.imageUrl}
+                      alt={ad.title}
+                      fill
+                      className="object-cover"
+                      data-ai-hint={ad.imageHint}
+                    />
+                </div>
+                <div className="p-4 bg-card">
+                    <h3 className="text-lg font-bold text-card-foreground">{ad.title}</h3>
+                    <p className="text-sm text-muted-foreground mt-1">{ad.description}</p>
+                    <Button 
+                        asChild 
+                        className="mt-4 w-full md:w-auto"
+                    >
+                        <a href={ad.link} target="_blank" rel="noopener noreferrer">
+                            {ad.buttonText}
+                            <ExternalLink className="ml-2 h-4 w-4" />
+                        </a>
+                    </Button>
+                </div>
+              </Card>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+      </Carousel>
       
       <div className="space-y-8">
         <div>
@@ -409,9 +433,5 @@ export function StudyBuddy() {
     </div>
   );
 }
-
-    
-
-    
 
     

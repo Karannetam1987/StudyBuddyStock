@@ -25,13 +25,13 @@ const DEFAULT_CONTACT_INFO = {
     website: "https://www.investofuture.in"
 };
 
-const DEFAULT_CUSTOM_AD = {
-  imageUrl: "https://picsum.photos/seed/ad1/800/400",
-  title: "Your Custom Advertisement",
-  description: "Promote your product or service here with a catchy description. This space is fully customizable.",
-  buttonText: "Click Here",
-  link: "https://www.investofuture.in",
-  imageHint: "advertisement banner"
+const DEFAULT_AD_ITEM = {
+  imageUrl: "https://picsum.photos/seed/ad-placeholder/800/400",
+  title: "",
+  description: "",
+  buttonText: "",
+  link: "",
+  imageHint: ""
 };
 
 
@@ -95,8 +95,7 @@ export default function Contact() {
   const [adminEmail, setAdminEmail] = useState(DEFAULT_ADMIN_EMAIL);
   const [adminPanelOpen, setAdminPanelOpen] = useState({theme: false, content: false, api: false});
   const { toast } = useToast();
-  const adImageInputRef = useRef<HTMLInputElement>(null);
-
+  
   const [primaryColor, setPrimaryColor] = useState('#000000');
   const [backgroundColor, setBackgroundColor] = useState('#000000');
   const [accentColor, setAccentColor] = useState('#000000');
@@ -107,7 +106,8 @@ export default function Contact() {
   const [apiKeys, setApiKeys] = useState({ google: '', facebook: '', gemini: '', openai: '' });
   const [adsConfig, setAdsConfig] = useState({ provider: 'none', code: '' });
   
-  const [customAd, setCustomAd] = useState(DEFAULT_CUSTOM_AD);
+  const [customAds, setCustomAds] = useState(() => Array(5).fill(null).map(() => ({ ...DEFAULT_AD_ITEM })));
+  const adImageInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const [showSaveApiOtpDialog, setShowSaveApiOtpDialog] = useState(false);
   const [saveApiOtp, setSaveApiOtp] = useState('');
@@ -150,8 +150,12 @@ export default function Contact() {
     const savedAdsConfig = localStorage.getItem('adsConfig');
     if(savedAdsConfig) setAdsConfig(JSON.parse(savedAdsConfig));
 
-    const savedCustomAd = localStorage.getItem('customAd');
-    if(savedCustomAd) setCustomAd(JSON.parse(savedCustomAd));
+    const savedCustomAds = localStorage.getItem('customAds');
+    if (savedCustomAds) {
+      const parsedAds = JSON.parse(savedCustomAds);
+      const fullAdsArray = Array(5).fill(null).map((_, i) => parsedAds[i] || { ...DEFAULT_AD_ITEM });
+      setCustomAds(fullAdsArray);
+    }
 
   }, [isAdmin]);
 
@@ -208,11 +212,13 @@ export default function Contact() {
     toast({ title: "Contact Info Saved!", description: "The contact information has been updated." });
   };
   
-  const handleCustomAdChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setCustomAd({ ...customAd, [e.target.name]: e.target.value });
+  const handleCustomAdChange = (index: number, e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const updatedAds = [...customAds];
+    updatedAds[index] = { ...updatedAds[index], [e.target.name]: e.target.value };
+    setCustomAds(updatedAds);
   };
   
-  const handleAdImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAdImageChange = (index: number, event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       if (file.size > 4 * 1024 * 1024) { // 4MB limit
@@ -221,19 +227,23 @@ export default function Contact() {
       }
       const reader = new FileReader();
       reader.onload = (e) => {
-        setCustomAd({ ...customAd, imageUrl: e.target?.result as string });
+        const updatedAds = [...customAds];
+        updatedAds[index] = { ...updatedAds[index], imageUrl: e.target?.result as string };
+        setCustomAds(updatedAds);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const removeAdImage = () => {
-    setCustomAd({ ...customAd, imageUrl: DEFAULT_CUSTOM_AD.imageUrl });
-    if(adImageInputRef.current) {
-        adImageInputRef.current.value = "";
+  const removeAdImage = (index: number) => {
+    const updatedAds = [...customAds];
+    updatedAds[index] = { ...updatedAds[index], imageUrl: DEFAULT_AD_ITEM.imageUrl };
+    setCustomAds(updatedAds);
+    const inputRef = adImageInputRefs.current[index];
+    if (inputRef) {
+      inputRef.value = "";
     }
   };
-
 
   const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setApiKeys({
@@ -260,7 +270,8 @@ export default function Contact() {
     if (saveApiOtp && saveApiOtp.length === 6) {
         localStorage.setItem('apiKeys', JSON.stringify(apiKeys));
         localStorage.setItem('adsConfig', JSON.stringify(adsConfig));
-        localStorage.setItem('customAd', JSON.stringify(customAd));
+        const adsToSave = customAds.filter(ad => ad.title && ad.imageUrl !== DEFAULT_AD_ITEM.imageUrl);
+        localStorage.setItem('customAds', JSON.stringify(adsToSave));
         toast({ title: "API & Ads Saved!", description: "Your settings have been updated successfully." });
         setShowSaveApiOtpDialog(false);
         setSaveApiOtp('');
@@ -480,46 +491,51 @@ export default function Contact() {
                                 <Separator/>
                                 <div className='space-y-4'>
                                     <h4 className="font-semibold flex items-center gap-2"><Megaphone /> Custom Ad Management</h4>
-                                    <p className="text-sm text-muted-foreground">Manage the custom ad banner on the homepage.</p>
+                                    <p className="text-sm text-muted-foreground">Manage the custom ad banner on the homepage. Up to 5 ads can be configured.</p>
                                     
-                                    <div className="space-y-2">
-                                      <Label>Ad Image</Label>
-                                      <div className="relative">
-                                        <Image src={customAd.imageUrl} width={600} height={300} alt="Ad image preview" className="rounded-lg w-full object-contain max-h-48 border" />
-                                        <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-8 w-8" onClick={removeAdImage}>
-                                            <X className="h-4 w-4" />
-                                        </Button>
-                                      </div>
-                                      <label htmlFor="ad-image-upload" className="mt-2 flex flex-col items-center justify-center w-full border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-muted transition-colors p-4 text-center">
-                                          <div className="flex flex-col items-center justify-center">
-                                              <UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" />
-                                              <p className="text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                                              <p className="text-xs text-muted-foreground">PNG, JPG, or WEBP (MAX. 4MB)</p>
+                                    {customAds.map((ad, index) => (
+                                      <div key={index} className="space-y-4 border p-4 rounded-lg">
+                                        <h5 className="font-medium">Ad Slot {index + 1}</h5>
+                                        <div className="space-y-2">
+                                          <Label>Ad Image</Label>
+                                          <div className="relative">
+                                            <Image src={ad.imageUrl} width={600} height={300} alt={`Ad ${index + 1} preview`} className="rounded-lg w-full object-contain max-h-48 border" />
+                                            <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-8 w-8" onClick={() => removeAdImage(index)}>
+                                                <X className="h-4 w-4" />
+                                            </Button>
                                           </div>
-                                          <Input id="ad-image-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={handleAdImageChange} ref={adImageInputRef} />
-                                      </label>
-                                    </div>
+                                          <label htmlFor={`ad-image-upload-${index}`} className="mt-2 flex flex-col items-center justify-center w-full border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-muted transition-colors p-4 text-center">
+                                              <div className="flex flex-col items-center justify-center">
+                                                  <UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" />
+                                                  <p className="text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span></p>
+                                                  <p className="text-xs text-muted-foreground">PNG, JPG, WEBP (MAX. 4MB)</p>
+                                              </div>
+                                              <Input id={`ad-image-upload-${index}`} type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => handleAdImageChange(index, e)} ref={(el) => adImageInputRefs.current[index] = el} />
+                                          </label>
+                                        </div>
 
-                                     <div className="space-y-2">
-                                        <Label htmlFor="ad-title">Title</Label>
-                                        <Input id="ad-title" name="title" value={customAd.title} onChange={handleCustomAdChange} placeholder="Ad Title" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="ad-description">Description</Label>
-                                        <Textarea id="ad-description" name="description" value={customAd.description} onChange={handleCustomAdChange} placeholder="Ad description text." rows={2} />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="ad-buttonText">Button Text</Label>
-                                        <Input id="ad-buttonText" name="buttonText" value={customAd.buttonText} onChange={handleCustomAdChange} placeholder="e.g., Learn More" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="ad-link">Link URL</Label>
-                                        <Input id="ad-link" name="link" value={customAd.link} onChange={handleCustomAdChange} placeholder="https://example.com/product" />
-                                    </div>
-                                    <div className="spacey-y-2">
-                                        <Label htmlFor="ad-imageHint">Image AI Hint</Label>
-                                        <Input id="ad-imageHint" name="imageHint" value={customAd.imageHint} onChange={handleCustomAdChange} placeholder="e.g., marketing banner" />
-                                    </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor={`ad-title-${index}`}>Title</Label>
+                                            <Input id={`ad-title-${index}`} name="title" value={ad.title} onChange={(e) => handleCustomAdChange(index, e)} placeholder="Ad Title" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor={`ad-description-${index}`}>Description</Label>
+                                            <Textarea id={`ad-description-${index}`} name="description" value={ad.description} onChange={(e) => handleCustomAdChange(index, e)} placeholder="Ad description text." rows={2} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor={`ad-buttonText-${index}`}>Button Text</Label>
+                                            <Input id={`ad-buttonText-${index}`} name="buttonText" value={ad.buttonText} onChange={(e) => handleCustomAdChange(index, e)} placeholder="e.g., Learn More" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor={`ad-link-${index}`}>Link URL</Label>
+                                            <Input id={`ad-link-${index}`} name="link" value={ad.link} onChange={(e) => handleCustomAdChange(index, e)} placeholder="https://example.com/product" />
+                                        </div>
+                                        <div className="spacey-y-2">
+                                            <Label htmlFor={`ad-imageHint-${index}`}>Image AI Hint</Label>
+                                            <Input id={`ad-imageHint-${index}`} name="imageHint" value={ad.imageHint} onChange={(e) => handleCustomAdChange(index, e)} placeholder="e.g., marketing banner" />
+                                        </div>
+                                      </div>
+                                    ))}
                                 </div>
                                 <Button onClick={handleSaveApiAndAds} disabled={isSendingSaveApiOtp}>
                                     {isSendingSaveApiOtp && <Loader2 className="mr-2 animate-spin" />}
@@ -637,6 +653,5 @@ export default function Contact() {
     </div>
   );
 }
-
 
     
