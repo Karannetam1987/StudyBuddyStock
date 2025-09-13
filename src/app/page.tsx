@@ -10,12 +10,15 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Setting a mock timer to simulate loading, since we are bypassing the AI part for now.
     const timer = setTimeout(() => {
       setLoading(false);
-    }, 3000); // 3 seconds splash screen
+    }, 1000); 
     return () => clearTimeout(timer);
   }, []);
 
+  // The original loading logic was tied to a 3-second splash screen.
+  // We'll keep a splash screen, but a shorter one for this test.
   if (loading) {
     return <SplashScreen />;
   }

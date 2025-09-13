@@ -145,6 +145,14 @@ export function StudyBuddy() {
     setIsLoading(true);
     setAnswer(null);
 
+    // If there's no API key, show a mock answer for testing
+    if (!process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        setAnswer("This is a test answer. The AI is currently disabled because the API key is not configured correctly on the server. Please check the server logs and environment variables.");
+        setIsLoading(false);
+        return;
+    }
+
     try {
         const result = await answerAcademicQuestion({
           subject: values.subject,
