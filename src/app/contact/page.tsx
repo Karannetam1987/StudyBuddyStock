@@ -103,26 +103,30 @@ export default function Contact() {
   const [contactInfo, setContactInfo] = useState(DEFAULT_CONTACT_INFO);
   const [editedContactInfo, setEditedContactInfo] = useState(DEFAULT_CONTACT_INFO);
   
-  const [apiKeys, setApiKeys] = useState({ google: '', facebook: '', gemini: '', openai: '' });
+  const [apiKeys, setApiKeys] = useState({ google: '', facebook: '', gemini: '', openai: '', resend: '' });
   const [adsConfig, setAdsConfig] = useState({ provider: 'none', code: '' });
   
   const [customAds, setCustomAds] = useState(() => Array(5).fill(null).map(() => ({ ...DEFAULT_AD_ITEM })));
   const adImageInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  const [showLoginOtpDialog, setShowLoginOtpDialog] = useState(false);
-  const [loginOtp, setLoginOtp] = useState('');
-  const [isSendingLoginOtp, setIsSendingLoginOtp] = useState(false);
+  // OTP State
+  const [otpSent, setOtpSent] = useState<string | null>(null);
+  const [otpInput, setOtpInput] = useState('');
+  const [showOtpDialog, setShowOtpDialog] = useState(false);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [otpAction, setOtpAction] = useState<(() => void) | null>(null);
+  const [otpDialogTitle, setOtpDialogTitle] = useState('');
+  const [otpDialogDescription, setOtpDialogDescription] = useState('');
 
-  const [showSaveApiOtpDialog, setShowSaveApiOtpDialog] = useState(false);
-  const [saveApiOtp, setSaveApiOtp] = useState('');
-  const [isSendingSaveApiOtp, setIsSendingSaveApiOtp] = useState(false);
-  
+
   const [showChangeEmailDialog, setShowChangeEmailDialog] = useState(false);
   const [changeEmailStep, setChangeEmailStep] = useState(1);
   const [newAdminEmail, setNewAdminEmail] = useState('');
   const [oldEmailOtp, setOldEmailOtp] = useState('');
   const [newEmailOtp, setNewEmailOtp] = useState('');
   const [isSendingChangeEmailOtps, setIsSendingChangeEmailOtps] = useState(false);
+  const [otpForOldEmail, setOtpForOldEmail] = useState<string | null>(null);
+  const [otpForNewEmail, setOtpForNewEmail] = useState<string | null>(null);
 
 
   useEffect(() => {
@@ -163,6 +167,57 @@ export default function Contact() {
 
   }, [isAdmin]);
 
+  // --- OTP Logic ---
+  const sendOtp = async (email: string, subject: string): Promise<string | null> => {
+    setIsSendingOtp(true);
+    const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    try {
+      const response = await fetch('/api/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: email, subject, otp: generatedOtp }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to send OTP email.');
+      }
+      
+      toast({ title: "OTP Sent", description: `An OTP has been sent to ${email}.` });
+      setIsSendingOtp(false);
+      return generatedOtp;
+
+    } catch (error: any) {
+      console.error("sendOtp error:", error);
+      toast({ variant: "destructive", title: "Failed to Send OTP", description: error.message });
+      setIsSendingOtp(false);
+      // For prototype, log to console if API fails
+      console.log(`PROTOTYPE ONLY - OTP for ${email}: ${generatedOtp}`);
+      toast({ title: "OTP Sending Failed (Using Fallback)", description: "The OTP has been logged to the console for this prototype." });
+      return generatedOtp; 
+    }
+  };
+
+  const handleOtpVerification = () => {
+    if (otpInput === otpSent) {
+      toast({ title: "Verification Successful!" });
+      if (otpAction) {
+        otpAction();
+      }
+      resetOtpState();
+    } else {
+      toast({ variant: "destructive", title: "Invalid OTP", description: "The OTP you entered is incorrect." });
+    }
+  };
+
+  const resetOtpState = () => {
+    setShowOtpDialog(false);
+    setOtpInput('');
+    setOtpSent(null);
+    setOtpAction(null);
+  };
+  // --- End OTP Logic ---
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLoginEmail(e.target.value);
@@ -173,23 +228,16 @@ export default function Contact() {
       toast({ variant: "destructive", title: "Invalid admin email." });
       return;
     }
-    setIsSendingLoginOtp(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    const mockOtp = Math.floor(100000 + Math.random() * 900000).toString();
-    console.log(`PROTOTYPE: OTP for admin login is ${mockOtp}`);
-    setShowLoginOtpDialog(true);
-    toast({ title: "OTP Sent (Mock)", description: "For this prototype, an OTP has been logged to the browser's developer console." });
-    setIsSendingLoginOtp(false);
-  };
-
-  const handleLoginOtpVerification = () => {
-    if (loginOtp && loginOtp.length === 6) {
+    const sentOtp = await sendOtp(loginEmail, "Admin Panel Login OTP");
+    if (sentOtp) {
+      setOtpSent(sentOtp);
+      setOtpAction(() => () => {
         setIsAdmin(true);
         toast({ title: "Admin access granted." });
-        setShowLoginOtpDialog(false);
-        setLoginOtp('');
-    } else {
-        toast({ variant: "destructive", title: "Invalid OTP", description: "Please enter a valid 6-digit OTP." });
+      });
+      setOtpDialogTitle("Admin Login Verification");
+      setOtpDialogDescription(`To protect the admin panel, please enter the OTP sent to ${loginEmail}.`);
+      setShowOtpDialog(true);
     }
   };
   
@@ -273,26 +321,19 @@ export default function Contact() {
   };
   
   const handleSaveApiAndAds = async () => {
-    setIsSendingSaveApiOtp(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    const mockOtp = Math.floor(100000 + Math.random() * 900000).toString();
-    console.log(`PROTOTYPE: OTP for saving API/Ads is ${mockOtp}`);
-    setShowSaveApiOtpDialog(true);
-    toast({ title: "OTP Sent (Mock)", description: `For this prototype, an OTP has been logged to the browser's developer console.` });
-    setIsSendingSaveApiOtp(false);
-  };
-
-  const handleSaveApiOtpVerification = () => {
-    if (saveApiOtp && saveApiOtp.length === 6) {
+    const sentOtp = await sendOtp(adminEmail, "Verify to Save Settings");
+    if (sentOtp) {
+      setOtpSent(sentOtp);
+      setOtpAction(() => () => {
         localStorage.setItem('apiKeys', JSON.stringify(apiKeys));
         localStorage.setItem('adsConfig', JSON.stringify(adsConfig));
         const adsToSave = customAds.filter(ad => ad.title && ad.imageUrl !== DEFAULT_AD_ITEM.imageUrl);
         localStorage.setItem('customAds', JSON.stringify(adsToSave));
         toast({ title: "API & Ads Saved!", description: "Your settings have been updated successfully." });
-        setShowSaveApiOtpDialog(false);
-        setSaveApiOtp('');
-    } else {
-        toast({ variant: "destructive", title: "Invalid OTP", description: "Please enter a valid 6-digit OTP." });
+      });
+      setOtpDialogTitle("OTP Verification");
+      setOtpDialogDescription(`To protect your account, please enter the OTP sent to ${adminEmail}.`);
+      setShowOtpDialog(true);
     }
   };
   
@@ -302,18 +343,22 @@ export default function Contact() {
       return;
     }
     setIsSendingChangeEmailOtps(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    const mockOtpOld = Math.floor(100000 + Math.random() * 900000).toString();
-    const mockOtpNew = Math.floor(100000 + Math.random() * 900000).toString();
-    console.log(`PROTOTYPE: OTP for old email (${adminEmail}) is ${mockOtpOld}`);
-    console.log(`PROTOTYPE: OTP for new email (${newAdminEmail}) is ${mockOtpNew}`);
-    setChangeEmailStep(2);
-    toast({ title: "OTPs Sent (Mock)", description: `OTPs for both emails have been logged to the console.` });
+    const otp1 = await sendOtp(adminEmail, "Admin Email Change Verification");
+    const otp2 = await sendOtp(newAdminEmail, "Admin Email Change Verification");
     setIsSendingChangeEmailOtps(false);
+
+    if (otp1 && otp2) {
+      setOtpForOldEmail(otp1);
+      setOtpForNewEmail(otp2);
+      setChangeEmailStep(2);
+      toast({ title: "OTPs Sent", description: `Verification codes have been sent to both email addresses.` });
+    } else {
+      toast({ variant: "destructive", title: "Failed to Send OTPs", description: "Could not send verification codes. Please check your settings and try again." });
+    }
   }
 
   const handleVerifyChangeEmailOtps = () => {
-    if (oldEmailOtp.length === 6 && newEmailOtp.length === 6) {
+    if (oldEmailOtp === otpForOldEmail && newEmailOtp === otpForNewEmail) {
         localStorage.setItem('adminEmail', newAdminEmail);
         setAdminEmail(newAdminEmail);
         toast({ title: "Admin Email Changed!", description: "You have been logged out. Please log in with your new email." });
@@ -322,9 +367,11 @@ export default function Contact() {
         setNewAdminEmail('');
         setOldEmailOtp('');
         setNewEmailOtp('');
+        setOtpForOldEmail(null);
+        setOtpForNewEmail(null);
         handleAdminLogout();
     } else {
-        toast({ variant: "destructive", title: "Invalid OTPs", description: "Please enter valid 6-digit OTPs for both emails." });
+        toast({ variant: "destructive", title: "Invalid OTPs", description: "Please ensure both OTPs are correct." });
     }
   }
 
@@ -395,8 +442,8 @@ export default function Contact() {
                         onChange={handleEmailChange}
                       />
                     </div>
-                    <Button onClick={handleAdminLogin} disabled={isSendingLoginOtp}>
-                        {isSendingLoginOtp && <Loader2 className="mr-2 animate-spin"/>}
+                    <Button onClick={handleAdminLogin} disabled={isSendingOtp}>
+                        {isSendingOtp && <Loader2 className="mr-2 animate-spin"/>}
                         Login
                     </Button>
                   </div>
@@ -482,6 +529,10 @@ export default function Contact() {
                                         <Label htmlFor="openai-api-key" className="flex items-center gap-2"><BrainCircuit/>OpenAI API Key</Label>
                                         <Input id="openai-api-key" name="openai" value={apiKeys.openai} onChange={handleApiKeyChange} placeholder="Enter your OpenAI API Key" />
                                     </div>
+                                     <div className="space-y-2">
+                                        <Label htmlFor="resend-api-key" className="flex items-center gap-2"><Mail/>Resend API Key</Label>
+                                        <Input id="resend-api-key" name="resend" value={apiKeys.resend} onChange={handleApiKeyChange} placeholder="Enter your Resend API Key" />
+                                    </div>
                                 </div>
                                 <Separator/>
                                 <div className='space-y-4'>
@@ -554,8 +605,8 @@ export default function Contact() {
                                       </div>
                                     ))}
                                 </div>
-                                <Button onClick={handleSaveApiAndAds} disabled={isSendingSaveApiOtp}>
-                                    {isSendingSaveApiOtp && <Loader2 className="mr-2 animate-spin" />}
+                                <Button onClick={handleSaveApiAndAds} disabled={isSendingOtp}>
+                                    {isSendingOtp && <Loader2 className="mr-2 animate-spin" />}
                                     Save All Settings
                                 </Button>
                               </CollapsibleContent>
@@ -576,12 +627,12 @@ export default function Contact() {
         </div>
       </main>
 
-      <Dialog open={showLoginOtpDialog} onOpenChange={setShowLoginOtpDialog}>
+      <Dialog open={showOtpDialog} onOpenChange={(isOpen) => { if(!isOpen) resetOtpState(); }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Admin Login Verification</DialogTitle>
+            <DialogTitle>{otpDialogTitle}</DialogTitle>
             <DialogDescription>
-              To protect the admin panel, please enter the OTP sent to {loginEmail}. For this prototype, the OTP is in the developer console.
+              {otpDialogDescription}
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
@@ -589,37 +640,13 @@ export default function Contact() {
               type="text" 
               placeholder="Enter 6-digit OTP"
               maxLength={6}
-              value={loginOtp}
-              onChange={(e) => setLoginOtp(e.target.value)}
+              value={otpInput}
+              onChange={(e) => setOtpInput(e.target.value)}
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowLoginOtpDialog(false)}>Cancel</Button>
-            <Button onClick={handleLoginOtpVerification}><ShieldCheck className="mr-2"/>Verify & Login</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-       <Dialog open={showSaveApiOtpDialog} onOpenChange={setShowSaveApiOtpDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>OTP Verification</DialogTitle>
-            <DialogDescription>
-              To protect your account, please enter the OTP. In this prototype, the OTP is in the developer console.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            <Input 
-              type="text" 
-              placeholder="Enter 6-digit OTP"
-              maxLength={6}
-              value={saveApiOtp}
-              onChange={(e) => setSaveApiOtp(e.target.value)}
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowSaveApiOtpDialog(false)}>Cancel</Button>
-            <Button onClick={handleSaveApiOtpVerification}><ShieldCheck className="mr-2"/>Verify & Save</Button>
+            <Button variant="outline" onClick={resetOtpState}>Cancel</Button>
+            <Button onClick={handleOtpVerification}><ShieldCheck className="mr-2"/>Verify</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -635,7 +662,7 @@ export default function Contact() {
             )}
              {changeEmailStep === 2 && (
                 <DialogDescription>
-                    To complete the change, please enter the mock OTPs sent to both email addresses. Check the developer console for the OTPs.
+                    To complete the change, please enter the OTPs sent to both email addresses.
                 </DialogDescription>
             )}
           </DialogHeader>
@@ -694,5 +721,3 @@ export default function Contact() {
     </div>
   );
 }
-
-    
