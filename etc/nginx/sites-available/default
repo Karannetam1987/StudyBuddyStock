@@ -1,0 +1,41 @@
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name studybuddy.investonews24.com www.studybuddy.investonews24.com;
+
+    # Let's Encrypt के सत्यापन के लिए विशेष नियम
+    location /.well-known/acme-challenge/ {
+        root /var/www/html;
+    }
+
+    location / {
+        proxy_pass http://localhost:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+
+# यह HTTPS सर्वर ब्लॉक Certbot द्वारा स्वचालित रूप से प्रबंधित किया जाएगा।
+# इसे मैन्युअल रूप से संपादित न करें।
+server {
+    listen 443 ssl;
+    server_name studybuddy.investonews24.com www.studybuddy.investonews24.com;
+
+    ssl_certificate /etc/letsencrypt/live/studybuddy.investonews24.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/studybuddy.investonews24.com/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    location / {
+        proxy_pass http://localhost:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
