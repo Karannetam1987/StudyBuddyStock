@@ -360,7 +360,3 @@ export function StudyBuddy() {
     </div>
   );
 }
-
-    
-
-    
