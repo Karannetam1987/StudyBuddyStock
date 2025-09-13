@@ -15,7 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { AnswerCard } from "@/components/app/answer-card";
 import { VoiceInputButton } from "@/components/app/voice-input-button";
-import { Send, Loader2, UploadCloud, X, Camera, BrainCircuit, BookOpen, FlaskConical, PenSquare, Code, Calculator, Languages, GraduationCap, Briefcase, Cog, HeartPulse, Sprout, Landmark, Palette, Album } from "lucide-react";
+import { Send, Loader2, UploadCloud, X, Camera, BrainCircuit, BookOpen, FlaskConical, PenSquare, Code, Calculator, Languages, GraduationCap, Briefcase, Cog, HeartPulse, Sprout, Landmark, Palette, Album, ExternalLink } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CameraInput } from "@/components/app/camera-input";
@@ -49,6 +49,16 @@ const languages = ['Hindi', 'English', 'Spanish', 'French', 'German', 'Mandarin'
 const formSchema = AnswerAcademicQuestionInputSchema;
 
 type FormValues = AnswerAcademicQuestionInput;
+
+// Dummy data for the custom ad. In a real app, this would come from a CMS or the admin panel.
+const customAd = {
+  imageUrl: "https://picsum.photos/seed/ad1/800/400",
+  title: "Your Custom Advertisement",
+  description: "Promote your product or service here with a catchy description. This space is fully customizable.",
+  buttonText: "Click Here",
+  link: "https://www.investofuture.in",
+  imageHint: "advertisement banner"
+};
 
 export function StudyBuddy() {
   const [selectedSubject, setSelectedSubject] = useState('General Knowledge');
@@ -183,7 +193,7 @@ export function StudyBuddy() {
 
   return (
     <div className="container mx-auto py-8 px-4">
-       <Card className="bg-primary/5 border-primary/20 mb-8">
+      <Card className="bg-primary/5 border-primary/20 mb-8">
         <CardHeader>
              <CardTitle className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
@@ -196,6 +206,32 @@ export function StudyBuddy() {
             </CardTitle>
             <CardDescription>Your AI-powered academic assistant. Select a subject below, ask your question, and let our AI help you out!</CardDescription>
         </CardHeader>
+      </Card>
+
+      {/* Custom Ad Container */}
+      <Card className="mb-8 overflow-hidden shadow-lg border-2 border-primary/30">
+        <div className="relative w-full aspect-video">
+            <Image 
+              src={customAd.imageUrl}
+              alt={customAd.title}
+              fill
+              className="object-cover"
+              data-ai-hint={customAd.imageHint}
+            />
+        </div>
+        <div className="p-4 bg-card">
+            <h3 className="text-lg font-bold text-card-foreground">{customAd.title}</h3>
+            <p className="text-sm text-muted-foreground mt-1">{customAd.description}</p>
+            <Button 
+                asChild 
+                className="mt-4 w-full md:w-auto"
+            >
+                <a href={customAd.link} target="_blank" rel="noopener noreferrer">
+                    {customAd.buttonText}
+                    <ExternalLink className="ml-2 h-4 w-4" />
+                </a>
+            </Button>
+        </div>
       </Card>
       
       <div className="space-y-8">
@@ -362,3 +398,5 @@ export function StudyBuddy() {
     </div>
   );
 }
+
+    
