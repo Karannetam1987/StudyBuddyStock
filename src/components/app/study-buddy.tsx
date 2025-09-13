@@ -145,9 +145,6 @@ export function StudyBuddy() {
     setIsLoading(true);
     setAnswer(null);
 
-    // This is the incorrect check that was causing the issue. It has been removed.
-    // if (!process.env.NEXT_PUBLIC_GEMINI_API_KEY) { ... }
-
     try {
         const result = await answerAcademicQuestion({
           subject: values.subject,
@@ -156,14 +153,10 @@ export function StudyBuddy() {
           image: imageDataUri || undefined,
         });
 
-        if (result.answer) {
+        if (result && result.answer) {
             setAnswer(result.answer);
         } else {
-            // Check if the API key is missing on the server and provide a helpful error
-            if (!process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
-               throw new Error("The Gemini API key is not configured on the server. Please check your environment variables.");
-            }
-            throw new Error("No answer received from the AI.");
+            throw new Error("No answer received from the AI. The API key might be invalid or the service could be down.");
         }
 
     } catch (error: any) {
@@ -359,3 +352,5 @@ export function StudyBuddy() {
     </div>
   );
 }
+
+    
