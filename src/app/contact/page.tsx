@@ -93,6 +93,7 @@ export default function Contact() {
   const [loginEmail, setLoginEmail] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminEmail, setAdminEmail] = useState(DEFAULT_ADMIN_EMAIL);
+  const [adminPin, setAdminPin] = useState<string | null>(null);
   const [adminPanelOpen, setAdminPanelOpen] = useState({theme: false, content: false, api: false});
   const { toast } = useToast();
   
@@ -109,15 +110,22 @@ export default function Contact() {
   const [customAds, setCustomAds] = useState(() => Array(5).fill(null).map(() => ({ ...DEFAULT_AD_ITEM })));
   const adImageInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  // OTP State
+  // Login State
+  const [loginStep, setLoginStep] = useState(1); // 1 for email, 2 for pin
+  const [loginPinInput, setLoginPinInput] = useState('');
+
+  // OTP State (now only for PIN changes)
   const [otpSent, setOtpSent] = useState<string | null>(null);
   const [otpInput, setOtpInput] = useState('');
   const [showOtpDialog, setShowOtpDialog] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [otpAction, setOtpAction] = useState<(() => void) | null>(null);
-  const [otpDialogTitle, setOtpDialogTitle] = useState('');
-  const [otpDialogDescription, setOtpDialogDescription] = useState('');
 
+  // PIN Management State
+  const [showPinDialog, setShowPinDialog] = useState(false);
+  const [pinDialogStep, setPinDialogStep] = useState(1); // 1 for OTP, 2 for new PIN
+  const [newPin, setNewPin] = useState('');
+  const [confirmNewPin, setConfirmNewPin] = useState('');
 
   const [showChangeEmailDialog, setShowChangeEmailDialog] = useState(false);
   const [changeEmailStep, setChangeEmailStep] = useState(1);
@@ -133,6 +141,10 @@ export default function Contact() {
     // Load Admin Email
     const savedAdminEmail = localStorage.getItem('adminEmail');
     setAdminEmail(savedAdminEmail || DEFAULT_ADMIN_EMAIL);
+    
+    // Load Admin PIN
+    const savedAdminPin = localStorage.getItem('adminPin');
+    setAdminPin(savedAdminPin);
 
     // Load Theme
     const primaryHsl = getCssVariable('--primary');
@@ -167,7 +179,7 @@ export default function Contact() {
 
   }, []);
 
-  // --- OTP Logic ---
+  // --- OTP Logic (for verification purposes) ---
   const sendOtp = async (email: string, subject: string): Promise<string | null> => {
     setIsSendingOtp(true);
     const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -184,7 +196,6 @@ export default function Contact() {
         setIsSendingOtp(false);
         return generatedOtp;
       } else {
-        // Handle API failure gracefully without crashing the app
         const errorData = await response.json().catch(() => ({ error: "An unknown error occurred." }));
         console.log(`PROTOTYPE ONLY - OTP for ${email}: ${generatedOtp}`);
         toast({ 
@@ -193,10 +204,9 @@ export default function Contact() {
           description: `Could not send email. The OTP for development is in the browser console. Reason: ${errorData.error || 'Unknown'}`
         });
         setIsSendingOtp(false);
-        return generatedOtp; // Return the OTP so the user can still log in via console.
+        return generatedOtp; 
       }
     } catch (error) {
-      // This catch block handles network errors or other exceptions during the fetch
       console.log(`PROTOTYPE ONLY - OTP for ${email}: ${generatedOtp}`);
       toast({ 
         variant: "destructive", 
@@ -204,7 +214,7 @@ export default function Contact() {
         description: "Could not send email. The OTP has been logged to the browser console for you to use." 
       });
       setIsSendingOtp(false);
-      return generatedOtp; // Return the OTP so the user can still log in via console.
+      return generatedOtp;
     }
   };
 
@@ -228,32 +238,36 @@ export default function Contact() {
     setOtpAction(null);
   };
   // --- End OTP Logic ---
-
+  
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLoginEmail(e.target.value);
   };
-
-  const handleAdminLogin = async () => {
+  
+  const handleAdminEmailSubmit = () => {
     if (loginEmail !== adminEmail) {
       toast({ variant: "destructive", title: "Invalid admin email." });
       return;
     }
-    const sentOtp = await sendOtp(loginEmail, "Admin Panel Login OTP");
-    if (sentOtp) {
-      setOtpSent(sentOtp);
-      setOtpAction(() => () => {
-        setIsAdmin(true);
-        toast({ title: "Admin access granted." });
-      });
-      setOtpDialogTitle("Admin Login Verification");
-      setOtpDialogDescription(`An OTP has been sent to ${loginEmail}. Check your email (or the browser console if email sending fails).`);
-      setShowOtpDialog(true);
+    setLoginStep(2);
+  };
+
+  const handleAdminPinSubmit = () => {
+    if (loginPinInput === adminPin) {
+      setIsAdmin(true);
+      toast({ title: "Admin access granted." });
+      setLoginStep(1);
+      setLoginPinInput('');
+    } else {
+      toast({ variant: "destructive", title: "Invalid PIN." });
+      setLoginPinInput('');
     }
   };
   
   const handleAdminLogout = () => {
     setIsAdmin(false);
     setLoginEmail('');
+    setLoginPinInput('');
+    setLoginStep(1);
   };
 
   const handleSaveTheme = () => {
@@ -341,10 +355,46 @@ export default function Contact() {
         localStorage.setItem('customAds', JSON.stringify(adsToSave));
         toast({ title: "API & Ads Saved!", description: "Your settings have been updated successfully." });
       });
-      setOtpDialogTitle("OTP Verification");
-      setOtpDialogDescription(`To protect your account, please enter the OTP sent to ${adminEmail}.`);
       setShowOtpDialog(true);
     }
+  };
+
+  const openPinDialog = async () => {
+    const sentOtp = await sendOtp(adminEmail, "Admin PIN Change Verification");
+    if (sentOtp) {
+      setOtpSent(sentOtp);
+      setShowPinDialog(true);
+      setPinDialogStep(1); // Start with OTP verification
+    }
+  };
+
+  const handlePinOtpVerification = () => {
+    if (otpInput === otpSent) {
+      toast({ title: "Verification Successful!", description: "You can now set your new PIN." });
+      setPinDialogStep(2);
+      setOtpInput('');
+      setOtpSent(null);
+    } else {
+      toast({ variant: "destructive", title: "Invalid OTP", description: "The OTP you entered is incorrect." });
+    }
+  };
+
+  const handleSetNewPin = () => {
+    if (newPin.length !== 4) {
+      toast({ variant: "destructive", title: "Invalid PIN", description: "PIN must be 4 digits." });
+      return;
+    }
+    if (newPin !== confirmNewPin) {
+      toast({ variant: "destructive", title: "PINs do not match", description: "Please re-enter your PIN." });
+      return;
+    }
+    localStorage.setItem('adminPin', newPin);
+    setAdminPin(newPin);
+    toast({ title: "PIN Set Successfully!" });
+    setShowPinDialog(false);
+    setNewPin('');
+    setConfirmNewPin('');
+    setPinDialogStep(1);
   };
   
   const handleChangeEmailSendOtps = async () => {
@@ -441,25 +491,67 @@ export default function Contact() {
               </CardHeader>
               <CardContent>
                 {!isAdmin ? (
-                   <div className="flex items-end gap-2">
-                    <div className="flex-1">
-                      <Label htmlFor="admin-email">Admin Email</Label>
-                      <Input 
-                        id="admin-email" 
-                        type="email" 
-                        placeholder="Enter admin email" 
-                        value={loginEmail}
-                        onChange={handleEmailChange}
-                      />
+                  <>
+                   {loginStep === 1 && (
+                     <div className="flex items-end gap-2">
+                      <div className="flex-1">
+                        <Label htmlFor="admin-email">Admin Email</Label>
+                        <Input 
+                          id="admin-email" 
+                          type="email" 
+                          placeholder="Enter admin email" 
+                          value={loginEmail}
+                          onChange={handleEmailChange}
+                          onKeyDown={(e) => e.key === 'Enter' && handleAdminEmailSubmit()}
+                        />
+                      </div>
+                      <Button onClick={handleAdminEmailSubmit}>
+                          Next
+                      </Button>
                     </div>
-                    <Button onClick={handleAdminLogin} disabled={isSendingOtp}>
-                        {isSendingOtp && <Loader2 className="mr-2 animate-spin"/>}
-                        Login
-                    </Button>
-                  </div>
+                   )}
+                   {loginStep === 2 && (
+                    <div className="space-y-4">
+                      <p>Enter PIN for <span className="font-semibold">{loginEmail}</span></p>
+                      <div className="flex items-end gap-2">
+                         <div className="flex-1">
+                           <Label htmlFor="admin-pin">Admin PIN</Label>
+                           <Input 
+                              id="admin-pin"
+                              type="password"
+                              maxLength={4}
+                              placeholder="Enter 4-digit PIN"
+                              value={loginPinInput}
+                              onChange={(e) => setLoginPinInput(e.target.value)}
+                              onKeyDown={(e) => e.key === 'Enter' && handleAdminPinSubmit()}
+                           />
+                         </div>
+                         <Button onClick={handleAdminPinSubmit} disabled={!adminPin}>
+                           Login
+                         </Button>
+                      </div>
+                      {!adminPin && <p className="text-sm text-yellow-500">No admin PIN is set. Please contact support or set one up if you are the primary admin.</p>}
+                      <Button variant="link" onClick={() => setLoginStep(1)}>Back to email</Button>
+                    </div>
+                   )}
+                  </>
                 ) : (
                   <div className="space-y-4">
                     <p className="text-green-500 font-semibold">Admin access granted.</p>
+
+                    {!adminPin && (
+                        <Card className="bg-yellow-500/10 border-yellow-500/50">
+                            <CardHeader>
+                                <CardTitle className="text-yellow-500 text-lg">Important: Set up your PIN</CardTitle>
+                                <CardDescription className="text-yellow-500/80">
+                                    Your account is not fully secure. Please set up an admin PIN to protect your settings.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <Button variant="secondary" onClick={openPinDialog}>Set Admin PIN Now</Button>
+                            </CardContent>
+                        </Card>
+                    )}
                     
                     <div className="space-y-4 pt-4 border-t">
                        <h3 className="font-semibold text-lg">Dashboard</h3>
@@ -622,6 +714,7 @@ export default function Contact() {
                               </CollapsibleContent>
                             </Collapsible>
 
+                            <Button variant="outline" className="w-full" onClick={openPinDialog}><KeyRound className="mr-2" /> {adminPin ? 'Change' : 'Set'} Admin PIN</Button>
                             <Button variant="outline" className="w-full" onClick={() => setShowChangeEmailDialog(true)}><Mail className="mr-2" /> Change Admin Email</Button>
                         </div>
                         <p className="text-sm text-muted-foreground">Note: More features are pending implementation.</p>
@@ -637,12 +730,13 @@ export default function Contact() {
         </div>
       </main>
 
+      {/* OTP Dialog for general verification */}
       <Dialog open={showOtpDialog} onOpenChange={(isOpen) => { if(!isOpen) resetOtpState(); }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{otpDialogTitle}</DialogTitle>
+            <DialogTitle>OTP Verification</DialogTitle>
             <DialogDescription>
-              {otpDialogDescription}
+              To protect your account, please enter the OTP sent to {adminEmail}.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
@@ -652,6 +746,7 @@ export default function Contact() {
               maxLength={6}
               value={otpInput}
               onChange={(e) => setOtpInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleOtpVerification()}
             />
           </div>
           <DialogFooter>
@@ -661,6 +756,77 @@ export default function Contact() {
         </DialogContent>
       </Dialog>
       
+      {/* PIN Management Dialog */}
+      <Dialog open={showPinDialog} onOpenChange={setShowPinDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{adminPin ? 'Change' : 'Set'} Admin PIN</DialogTitle>
+             {pinDialogStep === 1 && (
+                <DialogDescription>
+                  First, verify your identity. An OTP has been sent to {adminEmail}.
+                </DialogDescription>
+             )}
+             {pinDialogStep === 2 && (
+                <DialogDescription>
+                  Enter your new 4-digit PIN.
+                </DialogDescription>
+             )}
+          </DialogHeader>
+            {pinDialogStep === 1 && (
+              <div className="py-4 space-y-2">
+                <Label htmlFor="pin-otp">Verification OTP</Label>
+                <Input 
+                  id="pin-otp"
+                  type="text" 
+                  placeholder="Enter 6-digit OTP"
+                  maxLength={6}
+                  value={otpInput}
+                  onChange={(e) => setOtpInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handlePinOtpVerification()}
+                />
+              </div>
+            )}
+            {pinDialogStep === 2 && (
+              <div className="py-4 space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="new-pin">New 4-Digit PIN</Label>
+                  <Input 
+                    id="new-pin"
+                    type="password"
+                    maxLength={4}
+                    value={newPin}
+                    onChange={(e) => setNewPin(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-new-pin">Confirm New PIN</Label>
+                  <Input 
+                    id="confirm-new-pin"
+                    type="password"
+                    maxLength={4}
+                    value={confirmNewPin}
+                    onChange={(e) => setConfirmNewPin(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSetNewPin()}
+                  />
+                </div>
+              </div>
+            )}
+          <DialogFooter>
+            <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+            </DialogClose>
+             {pinDialogStep === 1 && (
+                <Button onClick={handlePinOtpVerification} disabled={isSendingOtp}>
+                  {isSendingOtp && <Loader2 className="mr-2 animate-spin" />}
+                  Verify OTP
+                </Button>
+             )}
+             {pinDialogStep === 2 && <Button onClick={handleSetNewPin}>Set New PIN</Button>}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Change Email Dialog */}
       <Dialog open={showChangeEmailDialog} onOpenChange={setShowChangeEmailDialog}>
         <DialogContent>
           <DialogHeader>
