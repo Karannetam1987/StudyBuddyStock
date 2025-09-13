@@ -50,8 +50,7 @@ const formSchema = AnswerAcademicQuestionInputSchema;
 
 type FormValues = AnswerAcademicQuestionInput;
 
-// Dummy data for the custom ad. In a real app, this would come from a CMS or the admin panel.
-const customAd = {
+const DEFAULT_CUSTOM_AD = {
   imageUrl: "https://picsum.photos/seed/ad1/800/400",
   title: "Your Custom Advertisement",
   description: "Promote your product or service here with a catchy description. This space is fully customizable.",
@@ -68,6 +67,7 @@ export function StudyBuddy() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageDataUri, setImageDataUri] = useState<string | null>(null);
   const [showAllSubjects, setShowAllSubjects] = useState(false);
+  const [customAd, setCustomAd] = useState(DEFAULT_CUSTOM_AD);
   const isMobile = useIsMobile();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -78,6 +78,15 @@ export function StudyBuddy() {
     const storedLanguage = localStorage.getItem('studyBuddyLanguage');
     if (storedLanguage && languages.includes(storedLanguage)) {
       setSelectedLanguage(storedLanguage);
+    }
+    
+    const savedAd = localStorage.getItem('customAd');
+    if (savedAd) {
+      try {
+        setCustomAd(JSON.parse(savedAd));
+      } catch (error) {
+        console.error("Failed to parse custom ad from localStorage", error);
+      }
     }
   }, []);
 
@@ -398,7 +407,5 @@ export function StudyBuddy() {
     </div>
   );
 }
-
-    
 
     

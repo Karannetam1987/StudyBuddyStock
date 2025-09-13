@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Building, Mail, Globe, Lock, Palette, FileText, Settings, ChevronDown, KeyRound, MonitorPlay, Facebook, Settings2, BrainCircuit, Bot, ShieldCheck, Loader2 } from 'lucide-react';
+import { ArrowLeft, Building, Mail, Globe, Lock, Palette, FileText, Settings, ChevronDown, KeyRound, MonitorPlay, Facebook, Settings2, BrainCircuit, Bot, ShieldCheck, Loader2, AdCircle } from 'lucide-react';
 import Link from 'next/link';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useToast } from '@/hooks/use-toast';
@@ -23,6 +23,16 @@ const DEFAULT_CONTACT_INFO = {
     email: "support@investofuture.in",
     website: "https://www.investofuture.in"
 };
+
+const DEFAULT_CUSTOM_AD = {
+  imageUrl: "https://picsum.photos/seed/ad1/800/400",
+  title: "Your Custom Advertisement",
+  description: "Promote your product or service here with a catchy description. This space is fully customizable.",
+  buttonText: "Click Here",
+  link: "https://www.investofuture.in",
+  imageHint: "advertisement banner"
+};
+
 
 // Helper to convert HEX to HSL string
 const hexToHsl = (hex: string): string => {
@@ -94,6 +104,8 @@ export default function Contact() {
   
   const [apiKeys, setApiKeys] = useState({ google: '', facebook: '', gemini: '', openai: '' });
   const [adsConfig, setAdsConfig] = useState({ provider: 'none', code: '' });
+  
+  const [customAd, setCustomAd] = useState(DEFAULT_CUSTOM_AD);
 
   const [showSaveApiOtpDialog, setShowSaveApiOtpDialog] = useState(false);
   const [saveApiOtp, setSaveApiOtp] = useState('');
@@ -135,6 +147,9 @@ export default function Contact() {
 
     const savedAdsConfig = localStorage.getItem('adsConfig');
     if(savedAdsConfig) setAdsConfig(JSON.parse(savedAdsConfig));
+
+    const savedCustomAd = localStorage.getItem('customAd');
+    if(savedCustomAd) setCustomAd(JSON.parse(savedCustomAd));
 
   }, [isAdmin]);
 
@@ -190,6 +205,11 @@ export default function Contact() {
     setContactInfo(editedContactInfo);
     toast({ title: "Contact Info Saved!", description: "The contact information has been updated." });
   };
+  
+  const handleCustomAdChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setCustomAd({ ...customAd, [e.target.name]: e.target.value });
+  };
+
 
   const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setApiKeys({
@@ -208,7 +228,7 @@ export default function Contact() {
     const mockOtp = Math.floor(100000 + Math.random() * 900000).toString();
     console.log(`PROTOTYPE: OTP for saving API/Ads is ${mockOtp}`);
     setShowSaveApiOtpDialog(true);
-    toast({ title: "OTP Sent (Mock)", description: `For this prototype, an OTP has been logged to the console. Check the browser's developer console.` });
+    toast({ title: "OTP Sent (Mock)", description: `For this prototype, an OTP has been logged to the browser's developer console.` });
     setIsSendingSaveApiOtp(false);
   };
 
@@ -216,6 +236,7 @@ export default function Contact() {
     if (saveApiOtp && saveApiOtp.length === 6) {
         localStorage.setItem('apiKeys', JSON.stringify(apiKeys));
         localStorage.setItem('adsConfig', JSON.stringify(adsConfig));
+        localStorage.setItem('customAd', JSON.stringify(customAd));
         toast({ title: "API & Ads Saved!", description: "Your settings have been updated successfully." });
         setShowSaveApiOtpDialog(false);
         setSaveApiOtp('');
@@ -432,9 +453,38 @@ export default function Contact() {
                                         <Textarea id="ad-code" value={adsConfig.code} onChange={(e) => setAdsConfig({...adsConfig, code: e.target.value})} placeholder="Paste your ad script or ID here" rows={4} />
                                     </div>
                                 </div>
+                                <Separator/>
+                                <div className='space-y-4'>
+                                    <h4 className="font-semibold flex items-center gap-2"><AdCircle /> Custom Ad Management</h4>
+                                    <p className="text-sm text-muted-foreground">Manage the custom ad banner on the homepage.</p>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="ad-imageUrl">Image URL</Label>
+                                        <Input id="ad-imageUrl" name="imageUrl" value={customAd.imageUrl} onChange={handleCustomAdChange} placeholder="https://example.com/image.png" />
+                                    </div>
+                                     <div className="space-y-2">
+                                        <Label htmlFor="ad-title">Title</Label>
+                                        <Input id="ad-title" name="title" value={customAd.title} onChange={handleCustomAdChange} placeholder="Ad Title" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="ad-description">Description</Label>
+                                        <Textarea id="ad-description" name="description" value={customAd.description} onChange={handleCustomAdChange} placeholder="Ad description text." rows={2} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="ad-buttonText">Button Text</Label>
+                                        <Input id="ad-buttonText" name="buttonText" value={customAd.buttonText} onChange={handleCustomAdChange} placeholder="e.g., Learn More" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="ad-link">Link URL</Label>
+                                        <Input id="ad-link" name="link" value={customAd.link} onChange={handleCustomAdChange} placeholder="https://example.com/product" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="ad-imageHint">Image AI Hint</Label>
+                                        <Input id="ad-imageHint" name="imageHint" value={customAd.imageHint} onChange={handleCustomAdChange} placeholder="e.g., marketing banner" />
+                                    </div>
+                                </div>
                                 <Button onClick={handleSaveApiAndAds} disabled={isSendingSaveApiOtp}>
                                     {isSendingSaveApiOtp && <Loader2 className="mr-2 animate-spin" />}
-                                    Save API & Ads
+                                    Save All Settings
                                 </Button>
                               </CollapsibleContent>
                             </Collapsible>
@@ -548,3 +598,5 @@ export default function Contact() {
     </div>
   );
 }
+
+    
